@@ -1,7 +1,8 @@
-all: elasticsearch logstash kibana
+all: elasticsearch logstash kibana beats
 
 submodules:
 	git submodule update --init --recursive
+	git submodule foreach git reset --hard origin/master
 
 elasticsearch: submodules
 	make --directory=elasticsearch
@@ -11,3 +12,6 @@ logstash: submodules
 
 kibana: submodules
 	make --directory=kibana
+
+beats: submodules
+	make --directory=beats

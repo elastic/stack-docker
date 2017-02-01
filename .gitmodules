@@ -7,3 +7,6 @@
 [submodule "logstash"]
 	path = logstash
 	url = git@github.com:elastic/logstash-docker.git
+[submodule "beats"]
+	path = beats
+	url = git@github.com:elastic/beats-docker.git
