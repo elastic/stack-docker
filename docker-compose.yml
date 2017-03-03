@@ -14,6 +14,8 @@ services:
     ports: ['127.0.0.1:5601:5601']
     networks: ['stack']
     depends_on: {elasticsearch: {condition: service_healthy}}
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:5601/login']
 
   logstash:
     image: docker.elastic.co/logstash/logstash:5.2.2
@@ -60,7 +62,7 @@ services:
         -es http://elasticsearch:9200
         -user elastic
         -pass changeme
-    depends_on: {elasticsearch: {condition: service_healthy}}
+    depends_on: {kibana: {condition: service_healthy}}
 
   set_default_index_pattern:
     image: docker.elastic.co/beats/metricbeat:5.2.2
@@ -68,6 +70,6 @@ services:
     command: >-
       curl -XPUT http://elastic:changeme@elasticsearch:9200/.kibana/config/5.2.2
         -d '{"defaultIndex" : "metricbeat-*"}'
-    depends_on: {elasticsearch: {condition: service_healthy}}
+    depends_on: {kibana: {condition: service_healthy}}
 
 networks: {stack: {}}
