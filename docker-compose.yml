@@ -1,0 +1,66 @@
+---
+version: '2.1'
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:5.2.2
+    environment: ['http.host=0.0.0.0', 'transport.host=127.0.0.1']
+    ports: ['127.0.0.1:9200:9200']
+    networks: ['stack']
+    healthcheck:
+      test: ['CMD', 'curl', '-f', '-u', 'elastic:changeme', 'http://localhost:9200']
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:5.2.2
+    ports: ['127.0.0.1:5601:5601']
+    networks: ['stack']
+    depends_on: {elasticsearch: {condition: service_healthy}}
+
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:5.2.2
+    volumes: [ '/var/log:/mnt/log:ro' ]
+    networks: ['stack']
+    depends_on: {elasticsearch: {condition: service_healthy}}
+
+  heartbeat:
+    image: docker.elastic.co/beats/heartbeat:5.2.2
+    networks: ['stack']
+    depends_on: {elasticsearch: {condition: service_healthy}}
+
+  metricbeat:
+    image: docker.elastic.co/beats/metricbeat:5.2.2
+    networks: ['stack']
+    volumes:
+      - /proc:/hostfs/proc:ro
+      - /sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro
+      - /:/hostfs:ro
+    command: metricbeat -e -system.hostfs=/hostfs
+    depends_on: {elasticsearch: {condition: service_healthy}}
+
+  packetbeat:
+    image: docker.elastic.co/beats/packetbeat:5.2.2
+    cap_add: ['NET_RAW', 'NET_ADMIN']
+    command: packetbeat -v -e -E output.elasticsearch.hosts='["localhost:9200"]'
+    network_mode: host
+    depends_on: {elasticsearch: {condition: service_healthy}}
+
+  import_dashboards:
+    image: docker.elastic.co/beats/metricbeat:5.2.2
+    networks: ['stack']
+    command: >-
+      /usr/share/metricbeat/scripts/import_dashboards
+        -beat ""
+        -file /usr/share/metricbeat/beats-dashboards-5.2.2.zip
+        -es http://elasticsearch:9200
+        -user elastic
+        -pass changeme
+    depends_on: {elasticsearch: {condition: service_healthy}}
+
+  set_default_index_pattern:
+    image: docker.elastic.co/beats/metricbeat:5.2.2
+    networks: ['stack']
+    command: >-
+      curl -XPUT http://elastic:changeme@elasticsearch:9200/.kibana/config/5.2.2
+        -d '{"defaultIndex" : "metricbeat-*"}'
+    depends_on: {elasticsearch: {condition: service_healthy}}
+
+networks: {stack: {}}
