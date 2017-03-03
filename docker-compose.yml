@@ -26,7 +26,8 @@ services:
 
   filebeat:
     image: docker.elastic.co/beats/filebeat:5.2.2
-    volumes: [ '/var/log:/mnt/log:ro' ]
+    group_add: ['root', 'adm']
+    volumes: ['/var/log:/mnt/log:ro']
     networks: ['stack']
     depends_on: {elasticsearch: {condition: service_healthy}}
 
