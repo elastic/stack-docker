@@ -65,6 +65,14 @@ services:
         -pass changeme
     depends_on: {kibana: {condition: service_healthy}}
 
+  create_logstash_index_pattern:
+    image: docker.elastic.co/beats/metricbeat:5.2.2
+    networks: ['stack']
+    command: >-
+      curl -XPUT http://elastic:changeme@elasticsearch:9200/.kibana/index-pattern/logstash-*
+        -d '{"title" : "logstash-*",  "timeFieldName": "@timestamp"}'
+    depends_on: {kibana: {condition: service_healthy}}
+
   set_default_index_pattern:
     image: docker.elastic.co/beats/metricbeat:5.2.2
     networks: ['stack']
