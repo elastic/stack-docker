@@ -39,11 +39,15 @@ services:
   metricbeat:
     image: docker.elastic.co/beats/metricbeat:5.2.2
     networks: ['stack']
-    volumes:
-      - /proc:/hostfs/proc:ro
-      - /sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro
-      - /:/hostfs:ro
-    command: metricbeat -e -system.hostfs=/hostfs
+    # The commented sections below enable Metricbeat to monitor the Docker host,
+    # rather than the Metricbeat container. It's problematic with Docker for
+    # Windows, however, since "/proc", "/sys" etc. don't exist on Windows.
+    # The same likely applies to OSX (needs testing).
+    # volumes:
+      #- /proc:/hostfs/proc:ro
+      # - /sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro
+      # - /:/hostfs:ro
+    command: metricbeat -e # -system.hostfs=/hostfs
     depends_on: {elasticsearch: {condition: service_healthy}}
 
   packetbeat:
