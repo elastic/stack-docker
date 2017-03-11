@@ -6,6 +6,7 @@ services:
     environment: ['http.host=0.0.0.0', 'transport.host=127.0.0.1']
     ports: ['127.0.0.1:9200:9200']
     networks: ['stack']
+    # Check that Elasticsearch is responding before hitting it with real requests.
     healthcheck:
       test: ['CMD', 'curl', '-f', '-u', 'elastic:changeme', 'http://localhost:9200']
 
@@ -14,11 +15,13 @@ services:
     ports: ['127.0.0.1:5601:5601']
     networks: ['stack']
     depends_on: {elasticsearch: {condition: service_healthy}}
+    # Check that Kibana is responding before loading dashboards etc.
     healthcheck:
       test: ['CMD', 'curl', '-f', 'http://localhost:5601/login']
 
   logstash:
     image: docker.elastic.co/logstash/logstash:5.2.2
+    # Provide a simple pipeline configuration for Logstash with a bind-mounted file.
     volumes:
       - ./config/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
     networks: ['stack']
@@ -27,7 +30,9 @@ services:
   filebeat:
     image: docker.elastic.co/beats/filebeat:5.2.2
     group_add: ['root', 'adm']
-    volumes: ['/var/log:/mnt/log:ro']
+    # If the host system has logs at "/var/log", mount them at "/mnt/log"
+    # inside the container, where Filebeat can find them.
+    # volumes: ['/var/log:/mnt/log:ro']
     networks: ['stack']
     depends_on: {elasticsearch: {condition: service_healthy}}
 
@@ -52,12 +57,23 @@ services:
 
   packetbeat:
     image: docker.elastic.co/beats/packetbeat:5.2.2
+    # Packetbeat needs some elevated privileges capture network traffic.
+    # We'll grant them with POSIX capabilities.
     cap_add: ['NET_RAW', 'NET_ADMIN']
-    command: packetbeat -v -e -E output.elasticsearch.hosts='["localhost:9200"]'
+    # Use "host mode" networking to allow Packetbeat to capture traffic from
+    # real network interface on the host, rather than being isolated to the
+    # container's virtual interface.
     network_mode: host
+    # Since we did that, Packetbeat is not part of the "stack" Docker network
+    # that the other containers are connected to, and thus can't resolve the
+    # hostname "elasticsearch". Instead, we'll tell it to find Elasticsearch
+    # on "localhost", which is the Docker host machine in this context.
+    command: packetbeat -v -e -E output.elasticsearch.hosts='["localhost:9200"]'
     depends_on: {elasticsearch: {condition: service_healthy}}
 
+  # Run a short-lived container to import the default dashboards for the Beats.
   import_dashboards:
+    # Any Beats image will do. We'll use Metricbeat.
     image: docker.elastic.co/beats/metricbeat:5.2.2
     networks: ['stack']
     command: >-
@@ -69,9 +85,12 @@ services:
         -pass changeme
     depends_on: {kibana: {condition: service_healthy}}
 
+  # Another short-lived container to create a Kibana index pattern for Logstash.
   create_logstash_index_pattern:
+    # The image just needs curl, and we know that Metricbeat has that.
     image: docker.elastic.co/beats/metricbeat:5.2.2
     networks: ['stack']
+    # There's currently no API for creating index patterns, so this is a bit hackish.
     command: >-
       curl -XPUT http://elastic:changeme@elasticsearch:9200/.kibana/index-pattern/logstash-*
         -d '{"title" : "logstash-*",  "timeFieldName": "@timestamp"}'
