@@ -4,23 +4,24 @@ ELASTIC_VERSION=5.2.2
 endif
 export ELASTIC_VERSION
 
-BRANCH=`echo $$ELASTIC_VERSION | egrep --only-matching '^[0-9]+.[0-9]+'`
+BRANCH=`echo $$ELASTIC_VERSION | egrep --only-matching '^[0-9]+[.][0-9]+'`
 
-IMAGE_TARGETS := elasticsearch logstash kibana beats
+TARGETS := elasticsearch logstash kibana beats
 
-# Every image gets a matching push target like "make beats-push".
-PUSH_TARGETS := $(foreach t,$(IMAGE_TARGETS),$(t)-push)
+images: $(TARGETS)
+push: $(TARGETS:%=%-push)
+clean: $(TARGETS:%=%-clean)
 
-images: $(IMAGE_TARGETS)
-push: $(PUSH_TARGETS)
+$(TARGETS): $(TARGETS:%=%-checkout)
+	(cd stack/$@ && make)
 
-$(IMAGE_TARGETS): submodules
-	(cd $@ && make)
+$(TARGETS:%=%-push): $(TARGETS:%=%-checkout)
+	(cd stack/$(@:%-push=%) && make push)
 
-$(PUSH_TARGETS): submodules
-	(cd $(subst -push,,$@) && make push)
+$(TARGETS:%=%-checkout):
+	test -d stack/$(@:%-checkout=%) || \
+          git clone https://github.com/elastic/$(@:%-checkout=%)-docker.git stack/$(@:%-checkout=%)
+	(cd stack/$(@:%-checkout=%) && git fetch && git reset --hard origin/$(BRANCH))
 
-submodules:
-	git submodule update --init --recursive
-	git submodule foreach git fetch --all
-	git submodule foreach git reset --hard origin/$(BRANCH)
+$(TARGETS:%=%-clean):
+	rm -rf stack/$(@:%-clean=%)
