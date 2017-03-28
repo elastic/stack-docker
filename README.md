@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/elastic/stack-docker.svg?branch=master)](https://travis-ci.org/elastic/stack-docker)
+
 # stack-docker
 Meta-project for the Elastic Docker images.
 
