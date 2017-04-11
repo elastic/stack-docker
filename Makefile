@@ -1,10 +1,11 @@
 SHELL=/bin/bash
+
 ifndef ELASTIC_VERSION
-ELASTIC_VERSION=5.3.0
+ELASTIC_VERSION := $(shell awk 'BEGIN { FS = "=" } /ELASTIC_VERSION/ { print $$2 }' .env)
 endif
 export ELASTIC_VERSION
 
-BRANCH=`echo $$ELASTIC_VERSION | egrep --only-matching '^[0-9]+[.][0-9]+'`
+BRANCH := `echo $$ELASTIC_VERSION | egrep --only-matching '^[0-9]+[.][0-9]+'`
 
 TARGETS := elasticsearch logstash kibana beats
 
