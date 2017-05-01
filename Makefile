@@ -1,11 +1,18 @@
 SHELL=/bin/bash
 
 ifndef ELASTIC_VERSION
-ELASTIC_VERSION := $(shell awk 'BEGIN { FS = "=" } /ELASTIC_VERSION/ { print $$2 }' .env)
+ELASTIC_VERSION := $(shell awk 'BEGIN { FS = "[= ]" } /^ELASTIC_VERSION=/ { print $$2 }' .env)
 endif
 export ELASTIC_VERSION
 
-BRANCH := `echo $$ELASTIC_VERSION | egrep --only-matching '^[0-9]+[.][0-9]+'`
+ifndef STAGING_BUILD_NUM
+STAGING_BUILD_NUM := $(shell awk 'BEGIN { FS = "[- ]" } /^TAG=/ { printf $$2 }' .env)
+endif
+export STAGING_BUILD_NUM
+
+ifndef BRANCH
+BRANCH := master
+endif
 
 TARGETS := elasticsearch logstash kibana beats
 
