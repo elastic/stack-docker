@@ -19,12 +19,13 @@ services:
   #
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:${TAG}
-    environment: ['http.host=0.0.0.0', 'transport.host=127.0.0.1']
+    environment: ['http.host=0.0.0.0', 'transport.host=127.0.0.1', 'ELASTIC_PWD=${ELASTIC_PWD}']
     ports: ['127.0.0.1:9200:9200']
     networks: ['stack']
 
   kibana:
     image: docker.elastic.co/kibana/kibana:${TAG}
+    environment: ['ELASTICSEARCH_PASSWORD=${ELASTIC_PWD}']
     ports: ['127.0.0.1:5601:5601']
     networks: ['stack']
     depends_on: ['elasticsearch']
@@ -80,6 +81,30 @@ services:
     command: packetbeat -v -e -E output.elasticsearch.hosts='["localhost:9200"]'
     depends_on: ['elasticsearch']
 
+  # Run a short-lived container to import the default dashboards for the Beats.
+  import_dashboards:
+    # Any Beats image will do. We'll use Metricbeat.
+    image: docker.elastic.co/beats/metricbeat:${TAG}
+    networks: ['stack']
+    command: >-
+      /usr/share/metricbeat/scripts/import_dashboards
+        -beat ""
+        -file /usr/share/metricbeat/beats-dashboards-${ELASTIC_VERSION}.zip
+        -es http://elasticsearch:9200
+        -user elastic
+        -pass ${ELASTIC_PWD}
+    depends_on: ['kibana']
+
+  # Another short-lived container to create a Kibana index pattern for Logstash.
+  create_logstash_index_pattern:
+    # The image just needs curl, and we know that Metricbeat has that.
+    image: docker.elastic.co/beats/metricbeat:${TAG}
+    networks: ['stack']
+    # There's currently no API for creating index patterns, so this is a bit hackish.
+    command: >-
+      curl -XPUT http://elastic:${ELASTIC_PWD}@elasticsearch:9200/.kibana/index-pattern/logstash-*
+        -d '{"title" : "logstash-*",  "timeFieldName": "@timestamp"}'
+
   # Run a short-lived container to set up Kibana index patterns and dashboards.
   configure_kibana:
     # Any Beats image will suffice. We'll use Metricbeat.
@@ -91,5 +116,8 @@ services:
     environment: ['ELASTIC_VERSION=${ELASTIC_VERSION}']
     networks: ['stack']
     depends_on: ['kibana']
+    command: >-
+      curl -XPUT http://elastic:${ELASTIC_PWD}@elasticsearch:9200/.kibana/config/${SHORT_VERSION}
+        -d '{"defaultIndex" : "metricbeat-*"}'
 
 networks: {stack: {}}
