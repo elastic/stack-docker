@@ -73,7 +73,7 @@ services:
 
   packetbeat:
     image: docker.elastic.co/beats/packetbeat:${TAG}
-    # Packetbeat needs some elevated privileges capture network traffic.
+    # Packetbeat needs some elevated privileges to capture network traffic.
     # We'll grant them with POSIX capabilities.
     cap_add: ['NET_RAW', 'NET_ADMIN']
     # Use "host mode" networking to allow Packetbeat to capture traffic from
