@@ -77,7 +77,7 @@ services:
     # We'll grant them with POSIX capabilities.
     cap_add: ['NET_RAW', 'NET_ADMIN']
     # Use "host mode" networking to allow Packetbeat to capture traffic from
-    # real network interface on the host, rather than being isolated to the
+    # the real network interface on the host, rather than being isolated to the
     # container's virtual interface.
     network_mode: host
     # Since we did that, Packetbeat is not part of the "stack" Docker network
