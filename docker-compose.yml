@@ -1,5 +1,5 @@
 ---
-version: '3.2'
+version: '3'
 services:
   # The environment variable "TAG" is used throughout this file to
   # specify the version of the images to run. The default is set in the
