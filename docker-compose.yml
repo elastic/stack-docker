@@ -85,7 +85,9 @@ services:
     # Any Beats image will suffice. We'll use Metricbeat.
     image: docker.elastic.co/beats/metricbeat:${TAG}
     volumes: ['./scripts/configure-kibana.sh:/usr/local/bin/configure-kibana.sh:ro']
-    command: /usr/local/bin/configure-kibana.sh
+    # The script may have CR/LF linefeeds if using Docker for Windows, so make
+    # sure that they don't confuse Bash.
+    command: ['/bin/bash', '-c', 'cat /usr/local/bin/configure-kibana.sh | tr -d "\r" | bash']
     environment: ['ELASTIC_VERSION=${ELASTIC_VERSION}']
     networks: ['stack']
     depends_on: ['kibana']
