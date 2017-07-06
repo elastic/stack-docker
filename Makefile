@@ -11,7 +11,7 @@ endif
 export STAGING_BUILD_NUM
 
 ifndef BRANCH
-BRANCH := master
+BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
 endif
 
 TARGETS := elasticsearch logstash kibana beats
