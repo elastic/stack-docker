@@ -6,14 +6,6 @@ until curl -s http://kibana:5601/login -o /dev/null; do
     sleep 1
 done
 
-# Import the standard Beats dashboards.
-/usr/share/metricbeat/scripts/import_dashboards \
-  -beat '' \
-  -file /usr/share/metricbeat/beats-dashboards-${ELASTIC_VERSION}.zip \
-  -es http://elasticsearch:9200 \
-  -user elastic \
-  -pass changeme
-
 # Create a Kibana index pattern for Logstash.
 # There's currently no API for creating index patterns, so this is a bit hackish.
 curl -s -XPUT http://elastic:changeme@elasticsearch:9200/.kibana/index-pattern/logstash-* \
