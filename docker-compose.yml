@@ -32,6 +32,8 @@ services:
 
   logstash:
     image: docker.elastic.co/logstash/logstash:${TAG}
+    environment:
+      - 'xpack.monitoring.elasticsearch.password=${ELASTIC_PWD}'
     # Provide a simple pipeline configuration for Logstash with a bind-mounted file.
     volumes:
       - ./config/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
