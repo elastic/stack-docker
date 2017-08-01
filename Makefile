@@ -10,8 +10,8 @@ STAGING_BUILD_NUM := $(shell awk 'BEGIN { FS = "[- ]" } /^TAG=/ { printf $$2 }' 
 endif
 export STAGING_BUILD_NUM
 
-ifndef BRANCH
-BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
+ifndef GIT_BRANCH
+GIT_BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
 endif
 
 TARGETS := elasticsearch logstash kibana beats
@@ -29,7 +29,7 @@ $(TARGETS:%=%-push): $(TARGETS:%=%-checkout)
 $(TARGETS:%=%-checkout):
 	test -d stack/$(@:%-checkout=%) || \
           git clone https://github.com/elastic/$(@:%-checkout=%)-docker.git stack/$(@:%-checkout=%)
-	(cd stack/$(@:%-checkout=%) && git fetch && git reset --hard origin/$(BRANCH))
+	(cd stack/$(@:%-checkout=%) && git fetch && git reset --hard origin/$(GIT_BRANCH))
 
 $(TARGETS:%=%-clean):
 	rm -rf stack/$(@:%-clean=%)
