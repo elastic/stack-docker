@@ -19,13 +19,13 @@ services:
   #
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:${TAG}
-    environment: ['http.host=0.0.0.0', 'transport.host=127.0.0.1', 'ELASTIC_PWD=${ELASTIC_PWD}']
+    environment: ['http.host=0.0.0.0', 'transport.host=127.0.0.1', 'ELASTIC_PASSWORD=${ELASTIC_PASSWORD}']
     ports: ['127.0.0.1:9200:9200']
     networks: ['stack']
 
   kibana:
     image: docker.elastic.co/kibana/kibana:${TAG}
-    environment: ['ELASTICSEARCH_PASSWORD=${ELASTIC_PWD}']
+    environment: ['ELASTICSEARCH_PASSWORD=${ELASTIC_PASSWORD}']
     ports: ['127.0.0.1:5601:5601']
     networks: ['stack']
     depends_on: ['elasticsearch']
@@ -33,7 +33,7 @@ services:
   logstash:
     image: docker.elastic.co/logstash/logstash:${TAG}
     environment:
-      - 'xpack.monitoring.elasticsearch.password=${ELASTIC_PWD}'
+      - 'xpack.monitoring.elasticsearch.password=${ELASTIC_PASSWORD}'
     # Provide a simple pipeline configuration for Logstash with a bind-mounted file.
     volumes:
       - ./config/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
@@ -90,7 +90,7 @@ services:
     # The script may have CR/LF linefeeds if using Docker for Windows, so make
     # sure that they don't confuse Bash.
     command: ['/bin/bash', '-c', 'cat /usr/local/bin/configure-kibana.sh | tr -d "\r" | bash']
-    environment: ['ELASTIC_VERSION=${SHORT_VERSION}', 'ELASTIC_PWD=${ELASTIC_PWD}']
+    environment: ['ELASTIC_VERSION=${SHORT_VERSION}', 'ELASTIC_PASSWORD=${ELASTIC_PASSWORD}']
     networks: ['stack']
     depends_on: ['kibana']
 
@@ -101,7 +101,7 @@ services:
     command: >-
       bash -c
         'until curl -XPUT \
-           http://elastic:${ELASTIC_PWD}@elasticsearch:9200/.kibana/index-pattern/logstash-* \
+           http://elastic:${ELASTIC_PASSWORD}@elasticsearch:9200/.kibana/index-pattern/logstash-* \
            -d '{"title" : "logstash-*",  "timeFieldName": "@timestamp"}'
          do sleep 1;
          done'
@@ -114,7 +114,7 @@ services:
         'until filebeat setup \
           -E setup.kibana.host=kibana \
           -E setup.kibana.username=elastic \
-          -E setup.kibana.password=${ELASTIC_PWD};
+          -E setup.kibana.password=${ELASTIC_PASSWORD};
          do sleep 1;
          done'
     networks: ['stack']
@@ -127,7 +127,7 @@ services:
         'until heartbeat setup \
           -E setup.kibana.host=kibana \
           -E setup.kibana.username=elastic \
-          -E setup.kibana.password=${ELASTIC_PWD};
+          -E setup.kibana.password=${ELASTIC_PASSWORD};
          do sleep 1;
          done'
     networks: ['stack']
@@ -140,7 +140,7 @@ services:
         'until metricbeat setup \
           -E setup.kibana.host=kibana \
           -E setup.kibana.username=elastic \
-          -E setup.kibana.password=${ELASTIC_PWD};
+          -E setup.kibana.password=${ELASTIC_PASSWORD};
          do sleep 1;
          done'
     networks: ['stack']
@@ -154,7 +154,7 @@ services:
         'until packetbeat setup \
           -E setup.kibana.host=kibana \
           -E setup.kibana.username=elastic \
-          -E setup.kibana.password=${ELASTIC_PWD};
+          -E setup.kibana.password=${ELASTIC_PASSWORD};
          do sleep 1;
          done'
     networks: ['stack']
