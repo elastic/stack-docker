@@ -6,16 +6,16 @@ services:
   # '.env' file in this folder. It can be overridden with any normal
   # technique for setting environment variables, for example:
   #
-  #   TAG=5.3.0 docker-compose up
+  #   TAG=6.0.0-beta1 docker-compose up
   #
   # REF: https://docs.docker.com/compose/compose-file/#variable-substitution
   #
   # Also to be sure to set ELASTIC_VERSION variable. For released versions,
   # ${TAG} and ${ELASTIC_VERSION} will be identical, but for pre-release
   # versions, ${TAG} might contain an extra build identifier, like
-  # "5.4.0-a80c820b", so a full invocation might look like:
+  # "6.0.0-beta1-3eab5b40", so a full invocation might look like:
   #
-  #   ELASTIC_VERSION=5.4.0 TAG=5.4.0-a80c820b docker-compose up
+  #   ELASTIC_VERSION=6.0.0-beta1 TAG=6.0.0-beta1-3eab5b40 docker-compose up
   #
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:${TAG}
@@ -38,7 +38,7 @@ services:
     volumes:
       - ./config/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
     networks: ['stack']
-    depends_on: ['elasticsearch']
+    depends_on: ['elasticsearch', 'setup_logstash']
 
   filebeat:
     image: docker.elastic.co/beats/filebeat:${TAG}
@@ -46,12 +46,12 @@ services:
     # inside the container, where Filebeat can find them.
     # volumes: ['/var/log:/mnt/log:ro']
     networks: ['stack']
-    depends_on: ['setup_filebeat']
+    depends_on: ['elasticsearch', 'setup_filebeat']
 
   heartbeat:
     image: docker.elastic.co/beats/heartbeat:${TAG}
     networks: ['stack']
-    depends_on: ['elasticsearch']
+    depends_on: ['elasticsearch', 'setup_heartbeat']
 
   metricbeat:
     image: docker.elastic.co/beats/metricbeat:${TAG}
@@ -65,7 +65,7 @@ services:
     #   - /:/hostfs:ro
     command: metricbeat -e # -system.hostfs=/hostfs
     networks: ['stack']
-    depends_on: ['setup_metricbeat']
+    depends_on: ['elasticsearch', 'setup_metricbeat']
 
   packetbeat:
     image: docker.elastic.co/beats/packetbeat:${TAG}
@@ -83,80 +83,47 @@ services:
     command: packetbeat -v -e -E output.elasticsearch.hosts='["localhost:9200"]'
     depends_on: ['elasticsearch']
 
-  # Run a short-lived container to set up Kibana index patterns and dashboards.
-  setup_kibana:
-    image: centos:7
-    volumes: ['./scripts/configure-kibana.sh:/usr/local/bin/configure-kibana.sh:ro']
-    # The script may have CR/LF linefeeds if using Docker for Windows, so make
-    # sure that they don't confuse Bash.
-    command: ['/bin/bash', '-c', 'cat /usr/local/bin/configure-kibana.sh | tr -d "\r" | bash']
-    environment: ['ELASTIC_VERSION=${SHORT_VERSION}', 'ELASTIC_PASSWORD=${ELASTIC_PASSWORD}']
-    networks: ['stack']
-    depends_on: ['kibana']
-
-
-  # Another short-lived container to create a Kibana index pattern for Logstash.
+  # Run a short-lived container to set up Logstash.
   setup_logstash:
     image: centos:7
-    command: >-
-      bash -c
-        'until curl -XPUT \
-           http://elastic:${ELASTIC_PASSWORD}@elasticsearch:9200/.kibana/index-pattern/logstash-* \
-           -d '{"title" : "logstash-*",  "timeFieldName": "@timestamp"}'
-         do sleep 1;
-         done'
+    volumes: ['./scripts/setup-logstash.sh:/usr/local/bin/setup-logstash.sh:ro']
+    # The script may have CR/LF line endings if using Docker for Windows, so
+    # make sure that they don't confuse Bash.
+    command: ['/bin/bash', '-c', 'cat /usr/local/bin/setup-logstash.sh | tr -d "\r" | bash']
+    environment: ['ELASTIC_PASSWORD=${ELASTIC_PASSWORD}']
     networks: ['stack']
+    depends_on: ['elasticsearch']
 
   setup_filebeat:
     image: docker.elastic.co/beats/filebeat:${TAG}
-    command: >-
-      bash -c
-        'until filebeat setup \
-          -E setup.kibana.host=kibana \
-          -E setup.kibana.username=elastic \
-          -E setup.kibana.password=${ELASTIC_PASSWORD};
-         do sleep 1;
-         done'
+    volumes: ['./scripts/setup-beat.sh:/usr/local/bin/setup-beat.sh:ro']
+    command: /usr/local/bin/setup-beat.sh filebeat
+    environment: ['ELASTIC_PASSWORD=${ELASTIC_PASSWORD}']
     networks: ['stack']
     depends_on: ['kibana']
 
   setup_heartbeat:
     image: docker.elastic.co/beats/heartbeat:${TAG}
-    command: >-
-      bash -c
-        'until heartbeat setup \
-          -E setup.kibana.host=kibana \
-          -E setup.kibana.username=elastic \
-          -E setup.kibana.password=${ELASTIC_PASSWORD};
-         do sleep 1;
-         done'
+    volumes: ['./scripts/setup-beat.sh:/usr/local/bin/setup-beat.sh:ro']
+    command: /usr/local/bin/setup-beat.sh heartbeat
+    environment: ['ELASTIC_PASSWORD=${ELASTIC_PASSWORD}']
     networks: ['stack']
     depends_on: ['kibana']
 
   setup_metricbeat:
     image: docker.elastic.co/beats/metricbeat:${TAG}
-    command: >-
-      bash -c
-        'until metricbeat setup \
-          -E setup.kibana.host=kibana \
-          -E setup.kibana.username=elastic \
-          -E setup.kibana.password=${ELASTIC_PASSWORD};
-         do sleep 1;
-         done'
+    volumes: ['./scripts/setup-beat.sh:/usr/local/bin/setup-beat.sh:ro']
+    command: /usr/local/bin/setup-beat.sh metricbeat
+    environment: ['ELASTIC_PASSWORD=${ELASTIC_PASSWORD}']
     networks: ['stack']
     depends_on: ['kibana']
 
   setup_packetbeat:
     image: docker.elastic.co/beats/packetbeat:${TAG}
     cap_add: ['NET_RAW', 'NET_ADMIN']
-    command: >-
-      bash -c
-        'until packetbeat setup \
-          -E setup.kibana.host=kibana \
-          -E setup.kibana.username=elastic \
-          -E setup.kibana.password=${ELASTIC_PASSWORD};
-         do sleep 1;
-         done'
+    volumes: ['./scripts/setup-beat.sh:/usr/local/bin/setup-beat.sh:ro']
+    command: /usr/local/bin/setup-beat.sh packetbeat
+    environment: ['ELASTIC_PASSWORD=${ELASTIC_PASSWORD}']
     networks: ['stack']
     depends_on: ['kibana']
 
