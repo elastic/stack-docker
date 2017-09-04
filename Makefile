@@ -5,11 +5,6 @@ ELASTIC_VERSION := $(shell awk 'BEGIN { FS = "[= ]" } /^ELASTIC_VERSION=/ { prin
 endif
 export ELASTIC_VERSION
 
-ifndef STAGING_BUILD_NUM
-STAGING_BUILD_NUM := $(shell awk 'BEGIN { FS = "[- ]" } /^TAG=/ { printf $$2 }' .env)
-endif
-export STAGING_BUILD_NUM
-
 ifndef GIT_BRANCH
 GIT_BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
 endif
