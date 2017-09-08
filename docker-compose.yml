@@ -40,6 +40,14 @@ services:
     networks: ['stack']
     depends_on: ['elasticsearch', 'setup_logstash']
 
+  auditbeat:
+    image: docker.elastic.co/beats/auditbeat:${TAG}
+    cap_add: ['AUDIT_CONTROL', 'AUDIT_READ']
+    # Auditbeat must run in the main process namespace.
+    pid: host
+    networks: ['stack']
+    depends_on: ['elasticsearch']
+
   filebeat:
     image: docker.elastic.co/beats/filebeat:${TAG}
     # If the host system has logs at "/var/log", mount them at "/mnt/log"
@@ -93,6 +101,14 @@ services:
     environment: ['ELASTIC_PASSWORD=${ELASTIC_PASSWORD}']
     networks: ['stack']
     depends_on: ['elasticsearch']
+
+  setup_auditbeat:
+    image: docker.elastic.co/beats/auditbeat:${TAG}
+    volumes: ['./scripts/setup-beat.sh:/usr/local/bin/setup-beat.sh:ro']
+    command: /usr/local/bin/setup-beat.sh auditbeat
+    environment: ['ELASTIC_PASSWORD=${ELASTIC_PASSWORD}']
+    networks: ['stack']
+    depends_on: ['kibana']
 
   setup_filebeat:
     image: docker.elastic.co/beats/filebeat:${TAG}
