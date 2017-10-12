@@ -10,7 +10,7 @@ services:
   #
   # REF: https://docs.docker.com/compose/compose-file/#variable-substitution
   #
-  # Also to be sure to set ELASTIC_VERSION variable. For released versions,
+  # Also be sure to set the ELASTIC_VERSION variable. For released versions,
   # ${TAG} and ${ELASTIC_VERSION} will be identical, but for pre-release
   # versions, ${TAG} might contain an extra build identifier, like
   # "5.4.0-a80c820b", so a full invocation might look like:
