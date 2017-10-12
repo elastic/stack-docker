@@ -16,10 +16,10 @@ RAM:
 ![Docker VM memory settings](screenshots/docker-vm-memory-settings.png)
 
 ## Starting the stack
-Try `docker-compose up` to create a demonstration Elastic stack with
+Try `docker-compose up` to create a demonstration Elastic Stack with
 Elasticsearch, Kibana, Logstash, Auditbeat, Metricbeat, Filebeat, Packetbeat,
 and Heartbeat.
 
-Point a browser at `http://localhost:5601` to see the results.
+Point a browser at [`http://localhost:5601`](http://localhost:5601) to see the results.
 
 Log in with `elastic` / `changeme`.
