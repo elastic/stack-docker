@@ -24,7 +24,7 @@ $(TARGETS:%=%-push): $(TARGETS:%=%-checkout)
 $(TARGETS:%=%-checkout):
 	test -d stack/$(@:%-checkout=%) || \
           git clone https://github.com/elastic/$(@:%-checkout=%)-docker.git stack/$(@:%-checkout=%)
-	(cd stack/$(@:%-checkout=%) && git fetch && git reset --hard origin/$(GIT_BRANCH))
+	(cd stack/$(@:%-checkout=%) && git fetch && git reset --hard && git checkout origin/$(GIT_BRANCH))
 
 $(TARGETS:%=%-clean):
 	rm -rf stack/$(@:%-clean=%)
