@@ -25,7 +25,9 @@ services:
 
   kibana:
     image: docker.elastic.co/kibana/kibana:${TAG}
-    environment: ['ELASTICSEARCH_PASSWORD=${ELASTIC_PASSWORD}']
+    environment:
+      - ELASTICSEARCH_USERNAME=kibana
+      - ELASTICSEARCH_PASSWORD=${ELASTIC_PASSWORD}
     ports: ['127.0.0.1:5601:5601']
     networks: ['stack']
     depends_on: ['elasticsearch']
@@ -98,6 +100,14 @@ services:
     # The script may have CR/LF line endings if using Docker for Windows, so
     # make sure that they don't confuse Bash.
     command: ['/bin/bash', '-c', 'cat /usr/local/bin/setup-logstash.sh | tr -d "\r" | bash']
+    environment: ['ELASTIC_PASSWORD=${ELASTIC_PASSWORD}']
+    networks: ['stack']
+    depends_on: ['elasticsearch']
+
+  setup_kibana:
+    image: centos:7
+    volumes: ['./scripts/setup-kibana.sh:/usr/local/bin/setup-kibana.sh:ro']
+    command: ['/bin/bash', '-c', 'cat /usr/local/bin/setup-kibana.sh | tr -d "\r" | bash']
     environment: ['ELASTIC_PASSWORD=${ELASTIC_PASSWORD}']
     networks: ['stack']
     depends_on: ['elasticsearch']
