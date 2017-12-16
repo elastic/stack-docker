@@ -93,6 +93,13 @@ services:
     command: packetbeat -v -e -E output.elasticsearch.hosts='["localhost:9200"]'
     depends_on: ['elasticsearch']
 
+  apm:
+    image: docker.elastic.co/apm/apm-server:${TAG}
+    ports: ['127.0.0.1:8200:8200']
+    networks: ['stack']
+    command: apm-server -v -e -E output.elasticsearch.hosts='["elasticsearch:9200"]' -E apm-server.host=apm:8200 -E output.elasticsearch.username=elastic -E output.elasticsearch.password=${ELASTIC_PASSWORD}
+    depends_on: ['elasticsearch','setup_apm']
+
   # Run a short-lived container to set up Logstash.
   setup_logstash:
     image: centos:7
@@ -152,5 +159,11 @@ services:
     environment: ['ELASTIC_PASSWORD=${ELASTIC_PASSWORD}']
     networks: ['stack']
     depends_on: ['kibana']
+
+  setup_apm:
+      image: docker.elastic.co/apm/apm-server:${TAG}
+      command: ./apm-server setup -E setup.kibana.host=kibana:5601
+      networks: ['stack']
+      depends_on: ['elasticsearch','kibana']
 
 networks: {stack: {}}
