@@ -97,7 +97,7 @@ services:
     image: docker.elastic.co/apm/apm-server:${TAG}
     ports: ['127.0.0.1:8200:8200']
     networks: ['stack']
-    command: apm-server -v -e -E output.elasticsearch.hosts='["elasticsearch:9200"]' -E apm-server.host=apm:8200 -E output.elasticsearch.username=elastic -E output.elasticsearch.password=${ELASTIC_PASSWORD}
+    command: apm-server -v -e
     depends_on: ['elasticsearch','setup_apm']
 
   # Run a short-lived container to set up Logstash.
@@ -162,7 +162,8 @@ services:
 
   setup_apm:
       image: docker.elastic.co/apm/apm-server:${TAG}
-      command: ./apm-server setup -E setup.kibana.host=kibana:5601
+      volumes: ['./scripts/setup-apm.sh:/usr/local/bin/setup-apm.sh:ro']
+      command: /usr/local/bin/setup-apm.sh apm-server
       networks: ['stack']
       depends_on: ['elasticsearch','kibana']
 
