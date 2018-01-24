@@ -65,6 +65,7 @@ services:
 
   heartbeat:
     image: docker.elastic.co/beats/heartbeat:${TAG}
+    container_name: heartbeat
     networks: ['stack']
     depends_on: ['elasticsearch', 'setup_heartbeat']
 
