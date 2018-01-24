@@ -170,11 +170,11 @@ services:
     depends_on: ['kibana']
 
   setup_apm:
-      image: docker.elastic.co/apm/apm-server:${TAG}
-      volumes: ['./scripts/setup-beat.sh:/usr/local/bin/setup-beat.sh:ro']
-      command: ['/bin/bash', '-c', 'cat /usr/local/bin/setup-beat.sh | tr -d "\r" | bash -s apm-server']
-      environment: ['ELASTIC_PASSWORD=${ELASTIC_PASSWORD}']
-      networks: ['stack']
-      depends_on: ['elasticsearch','kibana']
+    image: docker.elastic.co/apm/apm-server:${TAG}
+    volumes: ['./scripts/setup-beat.sh:/usr/local/bin/setup-beat.sh:ro']
+    command: ['/bin/bash', '-c', 'cat /usr/local/bin/setup-beat.sh | tr -d "\r" | bash -s apm-server']
+    environment: ['ELASTIC_PASSWORD=${ELASTIC_PASSWORD}']
+    networks: ['stack']
+    depends_on: ['elasticsearch','kibana']
 
 networks: {stack: {}}
