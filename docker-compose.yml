@@ -112,6 +112,7 @@ services:
   # Run a short-lived container to set up Logstash.
   setup_logstash:
     image: centos:7
+    container_name: setup_logstash
     volumes: ['./scripts/setup-logstash.sh:/usr/local/bin/setup-logstash.sh:ro']
     # The script may have CR/LF line endings if using Docker for Windows, so
     # make sure that they don't confuse Bash.
@@ -122,6 +123,7 @@ services:
 
   setup_kibana:
     image: centos:7
+    container_name: setup_kibana
     volumes: ['./scripts/setup-kibana.sh:/usr/local/bin/setup-kibana.sh:ro']
     command: ['/bin/bash', '-c', 'cat /usr/local/bin/setup-kibana.sh | tr -d "\r" | bash']
     environment: ['ELASTIC_PASSWORD=${ELASTIC_PASSWORD}']
@@ -130,6 +132,7 @@ services:
 
   setup_auditbeat:
     image: docker.elastic.co/beats/auditbeat:${TAG}
+    container_name: setup_auditbeat
     volumes: ['./scripts/setup-beat.sh:/usr/local/bin/setup-beat.sh:ro']
     command: ['/bin/bash', '-c', 'cat /usr/local/bin/setup-beat.sh | tr -d "\r" | bash -s auditbeat']
     environment: ['ELASTIC_PASSWORD=${ELASTIC_PASSWORD}']
@@ -138,6 +141,7 @@ services:
 
   setup_filebeat:
     image: docker.elastic.co/beats/filebeat:${TAG}
+    container_name: setup_filebeat
     volumes: ['./scripts/setup-beat.sh:/usr/local/bin/setup-beat.sh:ro']
     command: ['/bin/bash', '-c', 'cat /usr/local/bin/setup-beat.sh | tr -d "\r" | bash -s filebeat']
     environment: ['ELASTIC_PASSWORD=${ELASTIC_PASSWORD}']
@@ -146,6 +150,7 @@ services:
 
   setup_heartbeat:
     image: docker.elastic.co/beats/heartbeat:${TAG}
+    container_name: setup_heartbeat
     volumes: ['./scripts/setup-beat.sh:/usr/local/bin/setup-beat.sh:ro']
     command: ['/bin/bash', '-c', 'cat /usr/local/bin/setup-beat.sh | tr -d "\r" | bash -s heartbeat']
     environment: ['ELASTIC_PASSWORD=${ELASTIC_PASSWORD}']
@@ -154,6 +159,7 @@ services:
 
   setup_metricbeat:
     image: docker.elastic.co/beats/metricbeat:${TAG}
+    container_name: setup_metricbeat
     volumes: ['./scripts/setup-beat.sh:/usr/local/bin/setup-beat.sh:ro']
     command: ['/bin/bash', '-c', 'cat /usr/local/bin/setup-beat.sh | tr -d "\r" | bash -s metricbeat']
     environment: ['ELASTIC_PASSWORD=${ELASTIC_PASSWORD}']
@@ -162,6 +168,7 @@ services:
 
   setup_packetbeat:
     image: docker.elastic.co/beats/packetbeat:${TAG}
+    container_name: setup_packetbeat
     cap_add: ['NET_RAW', 'NET_ADMIN']
     volumes: ['./scripts/setup-beat.sh:/usr/local/bin/setup-beat.sh:ro']
     command: ['/bin/bash', '-c', 'cat /usr/local/bin/setup-beat.sh | tr -d "\r" | bash -s packetbeat']
@@ -171,6 +178,7 @@ services:
 
   setup_apm:
     image: docker.elastic.co/apm/apm-server:${TAG}
+    container_name: setup_apm
     volumes: ['./scripts/setup-beat.sh:/usr/local/bin/setup-beat.sh:ro']
     command: ['/bin/bash', '-c', 'cat /usr/local/bin/setup-beat.sh | tr -d "\r" | bash -s apm-server']
     environment: ['ELASTIC_PASSWORD=${ELASTIC_PASSWORD}']
