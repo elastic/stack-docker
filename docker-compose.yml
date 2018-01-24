@@ -101,8 +101,9 @@ services:
     command: packetbeat -v -e -E output.elasticsearch.hosts='["localhost:9200"]'
     depends_on: ['elasticsearch']
 
-  apm:
+  apm_server:
     image: docker.elastic.co/apm/apm-server:${TAG}
+    container_name: apm_server
     ports: ['127.0.0.1:8200:8200']
     networks: ['stack']
     command: apm-server -v -e
