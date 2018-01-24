@@ -107,7 +107,7 @@ services:
     ports: ['127.0.0.1:8200:8200']
     networks: ['stack']
     command: apm-server -v -e
-    depends_on: ['elasticsearch','setup_apm']
+    depends_on: ['elasticsearch','setup_apm_server']
 
   # Run a short-lived container to set up Logstash.
   setup_logstash:
@@ -176,9 +176,9 @@ services:
     networks: ['stack']
     depends_on: ['kibana']
 
-  setup_apm:
+  setup_apm_server:
     image: docker.elastic.co/apm/apm-server:${TAG}
-    container_name: setup_apm
+    container_name: setup_apm_server
     volumes: ['./scripts/setup-beat.sh:/usr/local/bin/setup-beat.sh:ro']
     command: ['/bin/bash', '-c', 'cat /usr/local/bin/setup-beat.sh | tr -d "\r" | bash -s apm-server']
     environment: ['ELASTIC_PASSWORD=${ELASTIC_PASSWORD}']
