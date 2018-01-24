@@ -131,7 +131,7 @@ services:
   setup_auditbeat:
     image: docker.elastic.co/beats/auditbeat:${TAG}
     volumes: ['./scripts/setup-beat.sh:/usr/local/bin/setup-beat.sh:ro']
-    command: /usr/local/bin/setup-beat.sh auditbeat
+    command: ['/bin/bash', '-c', 'cat /usr/local/bin/setup-beat.sh | tr -d "\r" | bash -s auditbeat']
     environment: ['ELASTIC_PASSWORD=${ELASTIC_PASSWORD}']
     networks: ['stack']
     depends_on: ['kibana']
@@ -139,7 +139,7 @@ services:
   setup_filebeat:
     image: docker.elastic.co/beats/filebeat:${TAG}
     volumes: ['./scripts/setup-beat.sh:/usr/local/bin/setup-beat.sh:ro']
-    command: /usr/local/bin/setup-beat.sh filebeat
+    command: ['/bin/bash', '-c', 'cat /usr/local/bin/setup-beat.sh | tr -d "\r" | bash -s filebeat']
     environment: ['ELASTIC_PASSWORD=${ELASTIC_PASSWORD}']
     networks: ['stack']
     depends_on: ['kibana']
@@ -147,7 +147,7 @@ services:
   setup_heartbeat:
     image: docker.elastic.co/beats/heartbeat:${TAG}
     volumes: ['./scripts/setup-beat.sh:/usr/local/bin/setup-beat.sh:ro']
-    command: /usr/local/bin/setup-beat.sh heartbeat
+    command: ['/bin/bash', '-c', 'cat /usr/local/bin/setup-beat.sh | tr -d "\r" | bash -s heartbeat']
     environment: ['ELASTIC_PASSWORD=${ELASTIC_PASSWORD}']
     networks: ['stack']
     depends_on: ['kibana']
@@ -155,7 +155,7 @@ services:
   setup_metricbeat:
     image: docker.elastic.co/beats/metricbeat:${TAG}
     volumes: ['./scripts/setup-beat.sh:/usr/local/bin/setup-beat.sh:ro']
-    command: /usr/local/bin/setup-beat.sh metricbeat
+    command: ['/bin/bash', '-c', 'cat /usr/local/bin/setup-beat.sh | tr -d "\r" | bash -s metricbeat']
     environment: ['ELASTIC_PASSWORD=${ELASTIC_PASSWORD}']
     networks: ['stack']
     depends_on: ['kibana']
@@ -164,15 +164,16 @@ services:
     image: docker.elastic.co/beats/packetbeat:${TAG}
     cap_add: ['NET_RAW', 'NET_ADMIN']
     volumes: ['./scripts/setup-beat.sh:/usr/local/bin/setup-beat.sh:ro']
-    command: /usr/local/bin/setup-beat.sh packetbeat
+    command: ['/bin/bash', '-c', 'cat /usr/local/bin/setup-beat.sh | tr -d "\r" | bash -s packetbeat']
     environment: ['ELASTIC_PASSWORD=${ELASTIC_PASSWORD}']
     networks: ['stack']
     depends_on: ['kibana']
 
   setup_apm:
       image: docker.elastic.co/apm/apm-server:${TAG}
-      volumes: ['./scripts/setup-apm.sh:/usr/local/bin/setup-apm.sh:ro']
-      command: /usr/local/bin/setup-apm.sh apm-server
+      volumes: ['./scripts/setup-beat.sh:/usr/local/bin/setup-beat.sh:ro']
+      command: ['/bin/bash', '-c', 'cat /usr/local/bin/setup-beat.sh | tr -d "\r" | bash -s apm-server']
+      environment: ['ELASTIC_PASSWORD=${ELASTIC_PASSWORD}']
       networks: ['stack']
       depends_on: ['elasticsearch','kibana']
 
