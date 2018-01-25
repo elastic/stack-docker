@@ -48,6 +48,7 @@ services:
   auditbeat:
     image: docker.elastic.co/beats/auditbeat:${TAG}
     container_name: auditbeat
+    command: -e -E 'output.elasticsearch.password=${ELASTIC_PASSWORD}'
     cap_add: ['AUDIT_CONTROL', 'AUDIT_READ']
     # Auditbeat must run in the main process namespace.
     pid: host
@@ -57,6 +58,7 @@ services:
   filebeat:
     image: docker.elastic.co/beats/filebeat:${TAG}
     container_name: filebeat
+    command: -e -E 'output.elasticsearch.password=${ELASTIC_PASSWORD}'
     # If the host system has logs at "/var/log", mount them at "/mnt/log"
     # inside the container, where Filebeat can find them.
     # volumes: ['/var/log:/mnt/log:ro']
@@ -66,6 +68,7 @@ services:
   heartbeat:
     image: docker.elastic.co/beats/heartbeat:${TAG}
     container_name: heartbeat
+    command: -e -E 'output.elasticsearch.password=${ELASTIC_PASSWORD}'
     networks: ['stack']
     depends_on: ['elasticsearch', 'setup_heartbeat']
 
@@ -80,7 +83,7 @@ services:
     #   - /proc:/hostfs/proc:ro
     #   - /sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro
     #   - /:/hostfs:ro
-    command: metricbeat -e # -system.hostfs=/hostfs
+    command: -e -E 'output.elasticsearch.password=${ELASTIC_PASSWORD}' # -system.hostfs=/hostfs
     networks: ['stack']
     depends_on: ['elasticsearch', 'setup_metricbeat']
 
@@ -98,7 +101,7 @@ services:
     # that the other containers are connected to, and thus can't resolve the
     # hostname "elasticsearch". Instead, we'll tell it to find Elasticsearch
     # on "localhost", which is the Docker host machine in this context.
-    command: packetbeat -v -e -E output.elasticsearch.hosts='["localhost:9200"]'
+    command: -e -E 'output.elasticsearch.hosts=["localhost:9200"]' -E 'output.elasticsearch.password=${ELASTIC_PASSWORD}'
     depends_on: ['elasticsearch']
 
   apm_server:
@@ -106,7 +109,7 @@ services:
     container_name: apm_server
     ports: ['127.0.0.1:8200:8200']
     networks: ['stack']
-    command: apm-server -v -e
+    command: -e -E 'output.elasticsearch.password=${ELASTIC_PASSWORD}'
     depends_on: ['elasticsearch','setup_apm_server']
 
   # Run a short-lived container to set up Logstash.

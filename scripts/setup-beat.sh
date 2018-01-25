@@ -3,8 +3,6 @@
 set -euo pipefail
 
 beat=$1
-es_url=http://elastic:${ELASTIC_PASSWORD}@elasticsearch:9200
-
 
 until curl -s http://kibana:5601; do
     sleep 2
@@ -16,4 +14,5 @@ sleep 5
 ${beat} setup \
         -E setup.kibana.host=kibana \
         -E setup.kibana.username=elastic \
-        -E setup.kibana.password=${ELASTIC_PASSWORD}
+        -E setup.kibana.password=${ELASTIC_PASSWORD} \
+        -E output.elasticsearch.password=${ELASTIC_PASSWORD}
