@@ -109,7 +109,7 @@ services:
     container_name: apm_server
     ports: ['127.0.0.1:8200:8200']
     networks: ['stack']
-    command: -e -E 'output.elasticsearch.password=${ELASTIC_PASSWORD}'
+    command: -e -E 'apm-server.host=0.0.0.0:8200'
     depends_on: ['elasticsearch','setup_apm_server']
 
   # Run a short-lived container to set up Logstash.
@@ -188,4 +188,6 @@ services:
     networks: ['stack']
     depends_on: ['elasticsearch','kibana']
 
-networks: {stack: {}}
+networks: 
+  stack:
+
