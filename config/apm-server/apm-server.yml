@@ -1,0 +1,17 @@
+apm-server.frontend.enabled: true
+
+output.elasticsearch:
+  hosts: ['elasticsearch:9200']
+  protocol: "https"
+  username: elastic
+  # Read PW from apm-server.keystore
+  password: "${ELASTIC_PASSWORD}"
+  ssl.certificate_authorities: ["/usr/share/apm-server/certs/ca/ca.crt"]
+
+setup.kibana:
+  host: "https://kibana:5601"
+  username: elastic
+  password: "${ELASTIC_PASSWORD}"
+  protocol: "https"
+  ssl.enabled: true
+  ssl.certificate_authorities: ["/usr/share/apm-server/certs/ca/ca.crt"]
