@@ -18,18 +18,15 @@ services:
   #   ELASTIC_VERSION=6.0.0-beta1 TAG=6.0.0-beta1-3eab5b40 docker-compose up
   #
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch-platinum:${TAG}
+    image: docker.elastic.co/elasticsearch/elasticsearch:${TAG}
     container_name: elasticsearch
-    environment: ['http.host=0.0.0.0', 'transport.host=127.0.0.1', 'ELASTIC_PASSWORD=${ELASTIC_PASSWORD}']
+    environment: ['http.host=0.0.0.0', 'transport.host=127.0.0.1']
     ports: ['127.0.0.1:9200:9200']
     networks: ['stack']
 
   kibana:
     image: docker.elastic.co/kibana/kibana:${TAG}
     container_name: kibana
-    environment:
-      - ELASTICSEARCH_USERNAME=kibana
-      - ELASTICSEARCH_PASSWORD=${ELASTIC_PASSWORD}
     ports: ['127.0.0.1:5601:5601']
     networks: ['stack']
     depends_on: ['elasticsearch']
@@ -37,8 +34,6 @@ services:
   logstash:
     image: docker.elastic.co/logstash/logstash:${TAG}
     container_name: logstash
-    environment:
-      - 'xpack.monitoring.elasticsearch.password=${ELASTIC_PASSWORD}'
     # Provide a simple pipeline configuration for Logstash with a bind-mounted file.
     volumes:
       - ./config/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
@@ -48,7 +43,6 @@ services:
   auditbeat:
     image: docker.elastic.co/beats/auditbeat:${TAG}
     container_name: auditbeat
-    command: -e -E 'output.elasticsearch.password=${ELASTIC_PASSWORD}'
     cap_add: ['AUDIT_CONTROL', 'AUDIT_READ']
     # Auditbeat must run in the main process namespace.
     pid: host
@@ -58,7 +52,6 @@ services:
   filebeat:
     image: docker.elastic.co/beats/filebeat:${TAG}
     container_name: filebeat
-    command: -e -E 'output.elasticsearch.password=${ELASTIC_PASSWORD}'
     # If the host system has logs at "/var/log", mount them at "/mnt/log"
     # inside the container, where Filebeat can find them.
     # volumes: ['/var/log:/mnt/log:ro']
@@ -68,7 +61,6 @@ services:
   heartbeat:
     image: docker.elastic.co/beats/heartbeat:${TAG}
     container_name: heartbeat
-    command: -e -E 'output.elasticsearch.password=${ELASTIC_PASSWORD}'
     networks: ['stack']
     depends_on: ['elasticsearch', 'setup_heartbeat']
 
@@ -83,7 +75,6 @@ services:
     #   - /proc:/hostfs/proc:ro
     #   - /sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro
     #   - /:/hostfs:ro
-    command: -e -E 'output.elasticsearch.password=${ELASTIC_PASSWORD}' # -system.hostfs=/hostfs
     networks: ['stack']
     depends_on: ['elasticsearch', 'setup_metricbeat']
 
@@ -101,7 +92,7 @@ services:
     # that the other containers are connected to, and thus can't resolve the
     # hostname "elasticsearch". Instead, we'll tell it to find Elasticsearch
     # on "localhost", which is the Docker host machine in this context.
-    command: -e -E 'output.elasticsearch.hosts=["localhost:9200"]' -E 'output.elasticsearch.password=${ELASTIC_PASSWORD}'
+    command: -e -E 'output.elasticsearch.hosts=["localhost:9200"]'
     depends_on: ['elasticsearch']
 
   apm_server:
@@ -109,7 +100,6 @@ services:
     container_name: apm_server
     ports: ['127.0.0.1:8200:8200']
     networks: ['stack']
-    command: -e -E 'output.elasticsearch.password=${ELASTIC_PASSWORD}'
     depends_on: ['elasticsearch','setup_apm_server']
 
   # Run a short-lived container to set up Logstash.
@@ -120,7 +110,6 @@ services:
     # The script may have CR/LF line endings if using Docker for Windows, so
     # make sure that they don't confuse Bash.
     command: ['/bin/bash', '-c', 'cat /usr/local/bin/setup-logstash.sh | tr -d "\r" | bash']
-    environment: ['ELASTIC_PASSWORD=${ELASTIC_PASSWORD}']
     networks: ['stack']
     depends_on: ['elasticsearch']
 
@@ -129,7 +118,6 @@ services:
     container_name: setup_kibana
     volumes: ['./scripts/setup-kibana.sh:/usr/local/bin/setup-kibana.sh:ro']
     command: ['/bin/bash', '-c', 'cat /usr/local/bin/setup-kibana.sh | tr -d "\r" | bash']
-    environment: ['ELASTIC_PASSWORD=${ELASTIC_PASSWORD}']
     networks: ['stack']
     depends_on: ['elasticsearch']
 
@@ -138,7 +126,6 @@ services:
     container_name: setup_auditbeat
     volumes: ['./scripts/setup-beat.sh:/usr/local/bin/setup-beat.sh:ro']
     command: ['/bin/bash', '-c', 'cat /usr/local/bin/setup-beat.sh | tr -d "\r" | bash -s auditbeat']
-    environment: ['ELASTIC_PASSWORD=${ELASTIC_PASSWORD}']
     networks: ['stack']
     depends_on: ['kibana']
 
@@ -147,7 +134,6 @@ services:
     container_name: setup_filebeat
     volumes: ['./scripts/setup-beat.sh:/usr/local/bin/setup-beat.sh:ro']
     command: ['/bin/bash', '-c', 'cat /usr/local/bin/setup-beat.sh | tr -d "\r" | bash -s filebeat']
-    environment: ['ELASTIC_PASSWORD=${ELASTIC_PASSWORD}']
     networks: ['stack']
     depends_on: ['kibana']
 
@@ -156,7 +142,6 @@ services:
     container_name: setup_heartbeat
     volumes: ['./scripts/setup-beat.sh:/usr/local/bin/setup-beat.sh:ro']
     command: ['/bin/bash', '-c', 'cat /usr/local/bin/setup-beat.sh | tr -d "\r" | bash -s heartbeat']
-    environment: ['ELASTIC_PASSWORD=${ELASTIC_PASSWORD}']
     networks: ['stack']
     depends_on: ['kibana']
 
@@ -165,7 +150,6 @@ services:
     container_name: setup_metricbeat
     volumes: ['./scripts/setup-beat.sh:/usr/local/bin/setup-beat.sh:ro']
     command: ['/bin/bash', '-c', 'cat /usr/local/bin/setup-beat.sh | tr -d "\r" | bash -s metricbeat']
-    environment: ['ELASTIC_PASSWORD=${ELASTIC_PASSWORD}']
     networks: ['stack']
     depends_on: ['kibana']
 
@@ -175,7 +159,6 @@ services:
     cap_add: ['NET_RAW', 'NET_ADMIN']
     volumes: ['./scripts/setup-beat.sh:/usr/local/bin/setup-beat.sh:ro']
     command: ['/bin/bash', '-c', 'cat /usr/local/bin/setup-beat.sh | tr -d "\r" | bash -s packetbeat']
-    environment: ['ELASTIC_PASSWORD=${ELASTIC_PASSWORD}']
     networks: ['stack']
     depends_on: ['kibana']
 
@@ -184,7 +167,6 @@ services:
     container_name: setup_apm_server
     volumes: ['./scripts/setup-beat.sh:/usr/local/bin/setup-beat.sh:ro']
     command: ['/bin/bash', '-c', 'cat /usr/local/bin/setup-beat.sh | tr -d "\r" | bash -s apm-server']
-    environment: ['ELASTIC_PASSWORD=${ELASTIC_PASSWORD}']
     networks: ['stack']
     depends_on: ['elasticsearch','kibana']
 
