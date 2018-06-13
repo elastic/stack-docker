@@ -107,6 +107,8 @@ services:
     image: docker.elastic.co/beats/auditbeat:${TAG}
     container_name: setup_auditbeat
     volumes: ['./scripts/setup-beat.sh:/usr/local/bin/setup-beat.sh:ro']
+    # The script may have CR/LF line endings if using Docker for Windows, so
+    # remove them so that they won't confuse Bash.
     command: ['/bin/bash', '-c', 'cat /usr/local/bin/setup-beat.sh | tr -d "\r" | bash -s auditbeat']
     networks: ['stack']
     depends_on: ['kibana']
