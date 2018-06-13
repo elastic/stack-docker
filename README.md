@@ -17,8 +17,8 @@ RAM:
 
 ## Starting the stack
 Try `docker-compose up` to create a demonstration Elastic Stack with
-Elasticsearch, Kibana, Logstash, Auditbeat, Metricbeat, Filebeat, Packetbeat,
-and Heartbeat.
+Elasticsearch, Kibana, Logstash, APM Server, Auditbeat, Metricbeat, Filebeat,
+Packetbeat, and Heartbeat.
 
 Point a browser at [`http://localhost:5601`](http://localhost:5601) to see the results.
 
