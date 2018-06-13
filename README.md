@@ -21,5 +21,3 @@ Elasticsearch, Kibana, Logstash, APM Server, Auditbeat, Metricbeat, Filebeat,
 Packetbeat, and Heartbeat.
 
 Point a browser at [`http://localhost:5601`](http://localhost:5601) to see the results.
-
-Log in with `elastic` / `changeme`.
