@@ -5,7 +5,7 @@ services:
   #   * keystore
   #   * SSL
   setup_elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch-platinum:${TAG}
+    image: docker.elastic.co/elasticsearch/elasticsearch:${TAG}
     container_name: setup_elasticsearch
     command: ['/bin/bash', '-c', 'cat /usr/local/bin/setup-elasticsearch.sh | tr -d "\r" | bash']
     environment: ['ELASTIC_PASSWORD=${ELASTIC_PASSWORD}']
