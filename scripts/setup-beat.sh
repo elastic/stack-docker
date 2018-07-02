@@ -4,8 +4,9 @@ set -euo pipefail
 
 beat=$1
 
-until curl -s -k https://kibana:5601; do
-    sleep 2
+until curl -s -k http://kibana:5601; do
+    echo "Waiting for kibana..."
+    sleep 5
 done
 sleep 5
 

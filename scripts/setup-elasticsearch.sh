@@ -7,7 +7,7 @@ fi
 
 # Determine if x-pack is enabled
 echo "Determining if x-pack is installed..."
-if /usr/share/elasticsearch/bin/elasticsearch-plugin list -s | grep -q x-pack; then
+if [[ -d /usr/share/elasticsearch/bin/x-pack ]]; then
 
     if [[ -n "$ELASTIC_PASSWORD" ]]; then
         echo "=== CREATE Keystore ==="
@@ -29,7 +29,7 @@ if /usr/share/elasticsearch/bin/elasticsearch-plugin list -s | grep -q x-pack; t
             rm /config/ssl/docker-cluster-ca.zip
         fi
         echo "Creating docker-cluster-ca.zip..."
-        /usr/share/elasticsearch/bin/x-pack/certutil ca --pem --silent --out /config/ssl/docker-cluster-ca.zip
+        /usr/share/elasticsearch/bin/elasticsearch-certutil ca --pem --silent --out /config/ssl/docker-cluster-ca.zip
 
         # check if ca directory exists, if does, remove then unzip new files
         if [ -d /config/ssl/ca ]; then
@@ -45,7 +45,7 @@ if /usr/share/elasticsearch/bin/elasticsearch-plugin list -s | grep -q x-pack; t
             rm /config/ssl/docker-cluster.zip
         fi
         echo "Create cluster certs zipfile..."
-        /usr/share/elasticsearch/bin/x-pack/certutil cert --silent --pem --in /config/ssl/instances.yml --out /config/ssl/docker-cluster.zip --ca-cert /config/ssl/ca/ca.crt --ca-key /config/ssl/ca/ca.key
+        /usr/share/elasticsearch/bin/elasticsearch-certutil cert --silent --pem --in /config/ssl/instances.yml --out /config/ssl/docker-cluster.zip --ca-cert /config/ssl/ca/ca.crt --ca-key /config/ssl/ca/ca.key
 
         if [ -d /config/ssl/docker-cluster ]; then
             rm -rf /config/ssl/docker-cluster

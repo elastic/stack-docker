@@ -14,6 +14,6 @@ docker-compose -f docker-compose.yml -f docker-compose.setup.yml up setup_kibana
 # setup beats and apm server
 docker-compose -f docker-compose.yml -f docker-compose.setup.yml up setup_auditbeat setup_filebeat setup_heartbeat setup_metricbeat setup_packetbeat setup_apm_server
 
-docker-compose -f docker-compose.yml -f docker-compose.setup.yml down --remove-orphans
-
-echo "All setup please run: \n\tdocker-compose up -d"
+printf "Setup completed successfully. To start the stack please run:\n\t docker-compose up -d\n"
+printf "\nIf you wish to remove the setup containers please run:\n\tdocker-compose -f docker-compose.yml -f docker-compose.setup.yml down --remove-orphans\n"
+printf "\nYou will have to re-start the stack after removing setup containers.\n"

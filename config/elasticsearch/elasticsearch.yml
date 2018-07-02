@@ -7,6 +7,7 @@ transport.host: 0.0.0.0
 # Details: https://github.com/elastic/elasticsearch/pull/17288
 discovery.zen.minimum_master_nodes: 1
 xpack.license.self_generated.type: trial
+xpack.security.enabled: true
 xpack.security.http.ssl.enabled: true
 xpack.security.http.ssl.verification_mode: certificate
 xpack.security.http.ssl.key:  certs/elasticsearch/elasticsearch.key

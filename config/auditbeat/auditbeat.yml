@@ -22,9 +22,9 @@ output.elasticsearch:
   ssl.certificate_authorities: ["/usr/share/auditbeat/certs/ca/ca.crt"]
 
 setup.kibana:
-  host: "https://kibana:5601"
+  host: "http://kibana:5601"
   username: elastic
   password: "${ELASTIC_PASSWORD}"
-  protocol: "https"
-  ssl.enabled: true
+  protocol: "http"
+  ssl.enabled: false
   ssl.certificate_authorities: ["/usr/share/auditbeat/certs/ca/ca.crt"]
