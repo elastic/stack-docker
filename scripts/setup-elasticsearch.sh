@@ -8,9 +8,10 @@ fi
 # Determine if x-pack is enabled
 echo "Determining if x-pack is installed..."
 if [[ -d /usr/share/elasticsearch/bin/x-pack ]]; then
-
     if [[ -n "$ELASTIC_PASSWORD" ]]; then
+
         echo "=== CREATE Keystore ==="
+        echo "Elastic password is: $ELASTIC_PASSWORD"
         if [ -f /config/elasticsearch/elasticsearch.keystore ]; then
             echo "Remove old elasticsearch.keystore"
             rm /config/elasticsearch/elasticsearch.keystore

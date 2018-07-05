@@ -15,8 +15,8 @@ es_url=https://elastic:${ELASTIC_PASSWORD}@elasticsearch:9200
 # Wait for Elasticsearch to start up before doing anything.
 
 
-while [[ "$(curl --cacert $cacert -s -o /dev/null -w ''%{http_code}'' $es_url)" != "200" ]]; do 
-    sleep 5 
+while [[ "$(curl --cacert $cacert -s -o /dev/null -w ''%{http_code}'' $es_url)" != "200" ]]; do
+    sleep 5
 done
 
 # Set the password for the kibana user.
@@ -36,7 +36,7 @@ if [ -f /config/kibana/kibana.keystore ]; then
     rm /config/kibana/kibana.keystore
 fi
 /usr/share/kibana/bin/kibana-keystore create
-echo "Setting elasticsearch.password..."
+echo "Setting elasticsearch.password: $ELASTIC_PASSWORD"
 echo "$ELASTIC_PASSWORD" | /usr/share/kibana/bin/kibana-keystore add 'elasticsearch.password' -x
 
 mv /usr/share/kibana/data/kibana.keystore /config/kibana/kibana.keystore
