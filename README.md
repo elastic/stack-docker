@@ -31,6 +31,9 @@ This is accomplished using the setup.yml file:
 docker-compose -f setup.yml up
 ```
 
+Please take note after the setup completes it will output the password
+that is used for the `elastic` login.
+
 Now we can launch the stack with `docker-compose up -d` to create a demonstration Elastic Stack with
 Elasticsearch, Kibana, Logstash, Auditbeat, Metricbeat, Filebeat, Packetbeat,
 and Heartbeat.
@@ -38,4 +41,5 @@ and Heartbeat.
 Point a browser at [`http://localhost:5601`](http://localhost:5601) to see the results.
 > *NOTE*: Elasticsearch is now setup with self-signed certs.
 
-Log in with `elastic` / `changeme`.
+Log in with `elastic` and what ever your auto generated elastic password is from the
+setup.
