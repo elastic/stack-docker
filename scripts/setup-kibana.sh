@@ -11,17 +11,17 @@ do
 done
 ls -l $cacert
 
-es_url=https://elastic:${ELASTIC_PASSWORD}@elasticsearch:9200
+es_url=https://elasticsearch:9200
 # Wait for Elasticsearch to start up before doing anything.
 
 
-while [[ "$(curl --cacert $cacert -s -o /dev/null -w ''%{http_code}'' $es_url)" != "200" ]]; do
+while [[ "$(curl -u "elastic:${ELASTIC_PASSWORD}" --cacert $cacert -s -o /dev/null -w '%{http_code}' $es_url)" != "200" ]]; do
     sleep 5
 done
 
 # Set the password for the kibana user.
 # REF: https://www.elastic.co/guide/en/x-pack/6.0/setting-up-authentication.html#set-built-in-user-passwords
-until curl --cacert $cacert -s -H 'Content-Type:application/json' \
+until curl -u "elastic:${ELASTIC_PASSWORD}" --cacert $cacert -s -H 'Content-Type:application/json' \
      -XPUT $es_url/_xpack/security/user/kibana/_password \
      -d "{\"password\": \"${ELASTIC_PASSWORD}\"}"
 do
