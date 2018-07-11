@@ -4,7 +4,7 @@ chown 1000 -R "$confdir"
 find "$confdir" -type f -name "*.keystore" -exec chmod go-wrx {} \;
 find "$confdir" -type f -name "*.yml" -exec chmod go-wrx {} \;
 
-PW=$(date +%s | sha256sum | base64 | head -c 16 ;)
+PW=$(openssl rand -base64 16;)
 ELASTIC_PASSWORD="${ELASTIC_PASSWORD:-$PW}"
 export ELASTIC_PASSWORD
 docker-compose -f docker-compose.yml -f docker-compose.setup.yml up setup_elasticsearch
