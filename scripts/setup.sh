@@ -4,6 +4,10 @@ chown 1000 -R "$confdir"
 find "$confdir" -type f -name "*.keystore" -exec chmod go-wrx {} \;
 find "$confdir" -type f -name "*.yml" -exec chmod go-wrx {} \;
 
+if [ -f "$confdir/elasticsearch/elasticsearch.keystore" ]; then
+    rm "$confdir/elasticsearch/elasticsearch.keystore"
+fi
+
 PW=$(openssl rand -base64 16;)
 ELASTIC_PASSWORD="${ELASTIC_PASSWORD:-$PW}"
 export ELASTIC_PASSWORD
