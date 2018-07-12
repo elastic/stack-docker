@@ -17,8 +17,11 @@ pip install docker-compose
   * `PWD=/path/to/checkout/for/stack-docker`
     * for example I use the path: `/c/Users/nick/elastic/stack-docker`
   * You can set these two ways:
-    1. in powershell use: `$Env:COMPOSE_CONVERT_WINDOWS_PATHS=1`
-    2. in System Properties add the environment variables.
+    1. Temporarily add an env var in powershell use: `$Env:COMPOSE_CONVERT_WINDOWS_PATHS=1`
+    2. Permanently add an env var in powershell use: `[Environment]::SetEnvironmentVariable("COMPOSE_CONVERT_WINDOWS_PATHS", "1", "Machine")`
+      > Note: you will need to refresh or create a new powershell for this env var to take effect
+    3. in System Properties add the environment variables.
+
 
 * At least 4GiB of RAM for the containers. Windows and Mac users _must_
 configure their Docker virtual machine to have more than the default 2 GiB of
