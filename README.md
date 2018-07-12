@@ -16,6 +16,7 @@ pip install docker-compose
   * `COMPOSE_CONVERT_WINDOWS_PATHS=1`
   * `PWD=/path/to/checkout/for/stack-docker`
     * for example I use the path: `/c/Users/nick/elastic/stack-docker`
+    * Note: you're paths must be in the form of `/c/path/to/place` using `C:\path\to\place` will not work
   * You can set these two ways:
     1. Temporarily add an env var in powershell use: `$Env:COMPOSE_CONVERT_WINDOWS_PATHS=1`
     2. Permanently add an env var in powershell use: `[Environment]::SetEnvironmentVariable("COMPOSE_CONVERT_WINDOWS_PATHS", "1", "Machine")`
