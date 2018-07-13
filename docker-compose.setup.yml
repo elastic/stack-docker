@@ -1,0 +1,128 @@
+---
+version: '3.6'
+services:
+  # Setup Elasticsearch
+  #   * keystore
+  #   * SSL
+  setup_elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:${TAG}
+    container_name: setup_elasticsearch
+    command: ['/bin/bash', '-c', 'cat /usr/local/bin/setup-elasticsearch.sh | tr -d "\r" | bash']
+    environment: ['ELASTIC_PASSWORD=${ELASTIC_PASSWORD}']
+    working_dir: '/config'
+    volumes:
+      - './config:/config'
+      - './scripts/setup-elasticsearch.sh:/usr/local/bin/setup-elasticsearch.sh:ro'
+
+  setup_kibana:
+    image: docker.elastic.co/kibana/kibana:${TAG}
+    container_name: setup_kibana
+    command: ['/bin/bash', '-c', 'cat /usr/local/bin/setup-kibana.sh | tr -d "\r" | bash']
+    environment: ['ELASTIC_PASSWORD=${ELASTIC_PASSWORD}']
+    working_dir: '/config'
+    volumes:
+      - './config:/config'
+      - './scripts/setup-kibana.sh:/usr/local/bin/setup-kibana.sh:ro'
+      - './config/ssl/ca/ca.crt:/usr/share/kibana/config/ca/ca.crt'
+    depends_on: ['elasticsearch']
+    networks: ['stack']
+
+  setup_logstash:
+    image: docker.elastic.co/logstash/logstash:${TAG}
+    container_name: setup_logstash
+    command: ['/bin/bash', '-c', 'cat /usr/local/bin/setup-logstash.sh | tr -d "\r" | bash']
+    environment: ['ELASTIC_PASSWORD=${ELASTIC_PASSWORD}']
+    working_dir: '/config'
+    volumes:
+      - './config:/config'
+      - './scripts/setup-logstash.sh:/usr/local/bin/setup-logstash.sh:ro'
+      - './config/ssl/ca/ca.crt:/usr/share/logstash/config/ca/ca.crt'
+    depends_on: ['elasticsearch']
+    networks: ['stack']
+
+  setup_auditbeat:
+    image: docker.elastic.co/beats/auditbeat:${TAG}
+    container_name: setup_auditbeat
+    user: root
+    pid: host
+    cap_add: ['AUDIT_CONTROL', 'AUDIT_READ']
+    volumes:
+      - './config:/config'
+      - './scripts/setup-beat.sh:/usr/local/bin/setup-beat.sh:ro'
+      - './config/auditbeat/auditbeat.yml:/usr/share/auditbeat/auditbeat.yml'
+      - './config/ssl/ca/ca.crt:/usr/share/auditbeat/certs/ca/ca.crt'
+    command: ['/bin/bash', '-c', 'cat /usr/local/bin/setup-beat.sh | tr -d "\r" | bash -s auditbeat']
+    environment: ['ELASTIC_PASSWORD=${ELASTIC_PASSWORD}']
+    networks: ['stack']
+    depends_on: ['kibana']
+
+  setup_filebeat:
+    image: docker.elastic.co/beats/filebeat:${TAG}
+    container_name: setup_filebeat
+    user: root
+    volumes:
+      - './config:/config'
+      - './scripts/setup-beat.sh:/usr/local/bin/setup-beat.sh:ro'
+      - './config/filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml'
+      - './config/ssl/ca/ca.crt:/usr/share/filebeat/certs/ca/ca.crt'
+    command: ['/bin/bash', '-c', 'cat /usr/local/bin/setup-beat.sh | tr -d "\r" | bash -s filebeat']
+    environment: ['ELASTIC_PASSWORD=${ELASTIC_PASSWORD}']
+    networks: ['stack']
+    depends_on: ['kibana']
+
+  setup_heartbeat:
+    image: docker.elastic.co/beats/heartbeat:${TAG}
+    container_name: setup_heartbeat
+    user: root
+    volumes:
+      - './config:/config'
+      - './scripts/setup-beat.sh:/usr/local/bin/setup-beat.sh:ro'
+      - './config/heartbeat/heartbeat.yml:/usr/share/heartbeat/heartbeat.yml'
+      - './config/ssl/ca/ca.crt:/usr/share/heartbeat/certs/ca/ca.crt'
+    command: ['/bin/bash', '-c', 'cat /usr/local/bin/setup-beat.sh | tr -d "\r" | bash -s heartbeat']
+    environment: ['ELASTIC_PASSWORD=${ELASTIC_PASSWORD}']
+    networks: ['stack']
+    depends_on: ['kibana']
+
+  setup_metricbeat:
+    image: docker.elastic.co/beats/metricbeat:${TAG}
+    container_name: setup_metricbeat
+    user: root
+    volumes:
+      - './config:/config'
+      - './scripts/setup-beat.sh:/usr/local/bin/setup-beat.sh:ro'
+      - './config/metricbeat/metricbeat.yml:/usr/share/metricbeat/metricbeat.yml'
+      - './config/ssl/ca/ca.crt:/usr/share/metricbeat/certs/ca/ca.crt'
+    command: ['/bin/bash', '-c', 'cat /usr/local/bin/setup-beat.sh | tr -d "\r" | bash -s metricbeat']
+    environment: ['ELASTIC_PASSWORD=${ELASTIC_PASSWORD}']
+    networks: ['stack']
+    depends_on: ['kibana']
+
+  setup_packetbeat:
+    image: docker.elastic.co/beats/packetbeat:${TAG}
+    container_name: setup_packetbeat
+    user: root
+    cap_add: ['NET_RAW', 'NET_ADMIN']
+    command: ['/bin/bash', '-c', 'cat /usr/local/bin/setup-beat.sh | tr -d "\r" | bash -s packetbeat']
+    volumes:
+      - './config:/config'
+      - './scripts/setup-beat.sh:/usr/local/bin/setup-beat.sh:ro'
+      - './config/packetbeat/packetbeat.yml:/usr/share/packetbeat/packetbeat.yml'
+      - './config/ssl/ca/ca.crt:/usr/share/packetbeat/certs/ca/ca.crt'
+    environment: ['ELASTIC_PASSWORD=${ELASTIC_PASSWORD}']
+    networks: ['stack']
+    depends_on: ['kibana']
+
+  setup_apm_server:
+    image: docker.elastic.co/apm/apm-server:${TAG}
+    container_name: setup_apm_server
+    user: root
+    command: ['/bin/bash', '-c', 'cat /usr/local/bin/setup-beat.sh | tr -d "\r" | bash -s apm-server']
+    volumes:
+      - './config:/config'
+      - './scripts/setup-beat.sh:/usr/local/bin/setup-beat.sh:ro'
+      - './config/apm-server/apm-server.yml:/usr/share/apm-server/apm-server.yml'
+      - './config/ssl/ca/ca.crt:/usr/share/apm-server/certs/ca/ca.crt'
+    environment: ['ELASTIC_PASSWORD=${ELASTIC_PASSWORD}']
+    networks: ['stack']
+    depends_on: ['kibana']

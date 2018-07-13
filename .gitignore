@@ -1,1 +1,23 @@
 **/*~
+# We wanna ignore any config/ssl/etc.. type file. As the setup container will create these for us.
+
+config/elasticsearch/elasticsearch.crt
+config/elasticsearch/elasticsearch.key
+config/elasticsearch/elasticsearch.keystore
+config/kibana/kibana.crt
+config/kibana/kibana.key
+config/kibana/kibana.keystore
+config/logstash/logstash.crt
+config/logstash/logstash.key
+config/logstash/logstash.keystore
+config/ssl/ca/ca.crt
+config/ssl/ca/ca.key
+config/ssl/docker-cluster-ca.zip
+config/ssl/docker-cluster.zip
+
+config/auditbeat/auditbeat.keystore
+config/filebeat/filebeat.keystore
+config/heartbeat/heartbeat.keystore
+config/metricbeat/metricbeat.keystore
+config/packetbeat/packetbeat.keystore
+config/apm-server/apm-server.keystore
