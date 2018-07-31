@@ -30,6 +30,14 @@ RAM:
 
 ![Docker VM memory settings](screenshots/docker-vm-memory-settings.png)
 
+* Linux Users must set the following configuration as `root`:
+
+```
+sysctl -w vm.max_map_count=262144
+```
+By default, the amount of Virtual Memory [is not enough](https://www.elastic.co/guide/en/elasticsearch/reference/current/vm-max-map-count.html).
+
+
 ## Starting the stack
 
 First we need to:
