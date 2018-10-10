@@ -1,4 +1,5 @@
 apm-server.frontend.enabled: true
+apm-server.host: "0.0.0.0:8200"
 
 output.elasticsearch:
   hosts: ['elasticsearch:9200']
