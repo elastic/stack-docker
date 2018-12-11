@@ -31,3 +31,5 @@ setup.kibana:
   protocol: "http"
   ssl.enabled: false
   ssl.certificate_authorities: ["/usr/share/heartbeat/certs/ca/ca.crt"]
+
+xpack.monitoring.enabled: true
