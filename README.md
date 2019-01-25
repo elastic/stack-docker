@@ -55,10 +55,8 @@ First we need to:
 
 This is accomplished using the setup.yml file:
 ```
-docker-compose -f setup/setup.yml run --rm setup bash
-bash ./scripts/setup.sh
+docker-compose -f setup/setup.yml run --rm setup
 ```
-When the setup has finished you can type `exit` to quit the setup process
 
 Please take note after the setup completes it will output the password
 that is used for the `elastic` login.
