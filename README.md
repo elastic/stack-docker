@@ -12,6 +12,12 @@ with Docker for Windows/Mac.
 pip install docker-compose
 ```
 
+### Windows 
+Please note that this repo has scripting that's written in `bash`. What this means is the containers that are linux based
+are expecting linux style line endings. If you clone this repo and you have windows style line endings, then please 
+read [The case of Windows line-ending in bash-script](https://techblog.dorogin.com/case-of-windows-line-ending-in-bash-script-7236f056abe). We've included the `.gitattributes` file in this project to help alliviate any issues. But you might need to make
+git global config settings. 
+
 * Windows Users must set the following 2 ENV vars:
   * `COMPOSE_CONVERT_WINDOWS_PATHS=1`
   * `PWD=/path/to/checkout/for/stack-docker`
@@ -49,7 +55,7 @@ First we need to:
 
 This is accomplished using the setup.yml file:
 ```
-docker-compose -f setup.yml run --rm setup bash
+docker-compose -f setup/setup.yml run --rm setup bash
 bash ./scripts/setup.sh
 ```
 When the setup has finished you can type `exit` to quit the setup process
