@@ -27,8 +27,5 @@ $(TARGETS:%=%-checkout):
 	(cd stack/$(@:%-checkout=%) && git fetch && git reset --hard && git checkout origin/$(GIT_BRANCH))
 
 $(TARGETS:%=%-clean):
-	rm -rf stack/$(@:%-clean=%) && find . -name "*.keystore" -exec rm -f {} \; && \
-		docker-compose -f docker-compose.setup.yml -f docker-compose.yml down --remove-orphans && \
-		docker-compose -f setup.yml down --remove-orphans && \
-		docker volume rm stack-docker_es_data
+	docker-compose down --remove-orphans -v
 
