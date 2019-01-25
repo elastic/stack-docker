@@ -87,8 +87,6 @@ services:
       - 'certs:/certs'
       - './scripts/setup-beat.sh:/usr/local/bin/setup-beat.sh:ro'
       - './config/auditbeat/auditbeat.yml:/usr/share/auditbeat/config/auditbeat.yml'
-    volumes:
-      - './scripts/setup-beat.sh:/usr/local/bin/setup-beat.sh:ro'
     networks: ['stack']
     depends_on: ['elasticsearch', 'kibana']
     healthcheck:
@@ -219,6 +217,7 @@ volumes:
   kb_config:
   kb_data:
   ls_config:
+  ab_config:
   fb_config:
   hb_config:
   mb_config:

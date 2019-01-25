@@ -20,7 +20,7 @@ printf "Running 'setup-logstash.sh'\n"
 docker-compose run --rm -u root -e ELASTIC_PASSWORD=$ELASTIC_PASSWORD logstash /usr/local/bin/setup-logstash.sh
 
 ## setup filebeat
-for service in filebeat heartbeat packetbeat metricbeat apm-server
+for service in auditbeat filebeat heartbeat packetbeat metricbeat apm-server
 do
   setup_command="docker-compose run --rm -u root -e ELASTIC_PASSWORD=$ELASTIC_PASSWORD $service /usr/local/bin/setup-beat.sh"
   eval $setup_command
