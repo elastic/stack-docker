@@ -1,3 +1,5 @@
+keystore.path: "/usr/share/metricbeat/config/metricbeat.keystore"
+
 metricbeat.config.modules:
   path: ${path.config}/modules.d/*.yml
   reload.enabled: false
@@ -11,7 +13,7 @@ output.elasticsearch:
   username: elastic
   # Read PW from metricbeat.keystore
   password: "${ELASTIC_PASSWORD}"
-  ssl.certificate_authorities: ["/usr/share/metricbeat/certs/ca/ca.crt"]
+  ssl.certificate_authorities: ["/certs/ssl/ca/ca.crt"]
 
 setup.kibana:
   host: "http://kibana:5601"
@@ -19,6 +21,6 @@ setup.kibana:
   password: "${ELASTIC_PASSWORD}"
   protocol: "http"
   ssl.enabled: false
-  ssl.certificate_authorities: ["/usr/share/metricbeat/certs/ca/ca.crt"]
+  ssl.certificate_authorities: ["/certs/ssl/ca/ca.crt"]
 
 xpack.monitoring.enabled: true

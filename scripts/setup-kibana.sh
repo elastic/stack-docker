@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-cacert=/usr/share/kibana/config/ca/ca.crt
+cacert=/certs/ssl/ca/ca.crt
 # Wait for ca file to exist before we continue. If the ca file doesn't exist
 # then something went wrong.
 while [ ! -f $cacert ]
@@ -39,4 +39,3 @@ fi
 echo "Setting elasticsearch.password: $ELASTIC_PASSWORD"
 echo "$ELASTIC_PASSWORD" | /usr/share/kibana/bin/kibana-keystore add 'elasticsearch.password' -x
 
-mv /usr/share/kibana/data/kibana.keystore /config/kibana/kibana.keystore

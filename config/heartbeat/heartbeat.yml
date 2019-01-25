@@ -1,3 +1,5 @@
+keystore.path: "/usr/share/heartbeat/config/heartbeat.keystore"
+
 heartbeat.monitors:
 - type: http
   schedule: '@every 5s'
@@ -5,7 +7,9 @@ heartbeat.monitors:
     - https://elasticsearch:9200
     - http://kibana:5601
   ssl:
-    certificate_authorities: ["/usr/share/heartbeat/certs/ca/ca.crt"]
+    certificate_authorities: ["/certs/ssl/ca/ca.crt"]
+  username: elastic
+  password: "${ELASTIC_PASSWORD}"
 
 - type: icmp
   schedule: '@every 5s'
@@ -22,7 +26,7 @@ output.elasticsearch:
   username: elastic
   # Read PW from heartbeat.keystore
   password: "${ELASTIC_PASSWORD}"
-  ssl.certificate_authorities: ["/usr/share/heartbeat/certs/ca/ca.crt"]
+  ssl.certificate_authorities: ["/certs/ssl/ca/ca.crt"]
 
 setup.kibana:
   host: "http://kibana:5601"
@@ -30,6 +34,6 @@ setup.kibana:
   password: "${ELASTIC_PASSWORD}"
   protocol: "http"
   ssl.enabled: false
-  ssl.certificate_authorities: ["/usr/share/heartbeat/certs/ca/ca.crt"]
+  ssl.certificate_authorities: ["/certs/ssl/ca/ca.crt"]
 
 xpack.monitoring.enabled: true

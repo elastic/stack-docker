@@ -1,24 +1,31 @@
-#/bin/ash
-confdir="${PWD}/config"
-chown 1000 -R "$confdir"
-find "$confdir" -type f -name "*.keystore" -exec chmod go-wrx {} \;
-find "$confdir" -type f -name "*.yml" -exec chmod go-wrx {} \;
-
-if [ -f "$confdir/elasticsearch/elasticsearch.keystore" ]; then
-    rm "$confdir/elasticsearch/elasticsearch.keystore"
-fi
+#/bin/bash
 
 PW=$(openssl rand -base64 16;)
 ELASTIC_PASSWORD="${ELASTIC_PASSWORD:-$PW}"
 export ELASTIC_PASSWORD
-docker-compose -f docker-compose.yml -f docker-compose.setup.yml up setup_elasticsearch
+echo "Running 'setup-elasticsearch.sh'\n"
+docker-compose run --rm -e ELASTIC_PASSWORD=$ELASTIC_PASSWORD elasticsearch /usr/local/bin/setup-elasticsearch.sh
+echo "Starting Elasticsearch...."
 
-# setup kibana and logstash (and system passwords)
-docker-compose -f docker-compose.yml -f docker-compose.setup.yml up setup_kibana setup_logstash
-# setup beats and apm server
-docker-compose -f docker-compose.yml -f docker-compose.setup.yml up setup_auditbeat setup_filebeat setup_heartbeat setup_metricbeat setup_packetbeat setup_apm_server
+docker-compose up -d elasticsearch
+printf "Running 'setup-users.sh'\n"
+docker exec -i -e ELASTIC_PASSWORD=$ELASTIC_PASSWORD elasticsearch /usr/local/bin/setup-users.sh
 
+## setup kibana
+printf "Running 'setup-kibana.sh'\n"
+docker-compose run --rm -e ELASTIC_PASSWORD=$ELASTIC_PASSWORD kibana /usr/local/bin/setup-kibana.sh
+docker-compose up -d kibana
+## setup logstash
+printf "Running 'setup-logstash.sh'\n"
+docker-compose run --rm -u root -e ELASTIC_PASSWORD=$ELASTIC_PASSWORD logstash /usr/local/bin/setup-logstash.sh
+
+## setup filebeat
+for service in filebeat heartbeat packetbeat metricbeat apm-server
+do
+  setup_command="docker-compose run --rm -u root -e ELASTIC_PASSWORD=$ELASTIC_PASSWORD $service /usr/local/bin/setup-beat.sh"
+  eval $setup_command
+done
+
+printf "\n\n****************************\n\n"
 printf "Setup completed successfully. To start the stack please run:\n\t docker-compose up -d\n"
-printf "\nIf you wish to remove the setup containers please run:\n\tdocker-compose -f docker-compose.yml -f docker-compose.setup.yml down --remove-orphans\n"
-printf "\nYou will have to re-start the stack after removing setup containers.\n"
 printf "\nYour 'elastic' user password is: $ELASTIC_PASSWORD\n"

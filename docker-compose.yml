@@ -20,22 +20,18 @@ services:
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:${TAG}
     container_name: elasticsearch
-    secrets:
-      - source: ca.crt
-        target: /usr/share/elasticsearch/config/certs/ca/ca.crt
-      - source: elasticsearch.yml
-        target: /usr/share/elasticsearch/config/elasticsearch.yml
-      - source: elasticsearch.keystore
-        target: /usr/share/elasticsearch/config/elasticsearch.keystore
-      - source: elasticsearch.key
-        target: /usr/share/elasticsearch/config/certs/elasticsearch/elasticsearch.key
-      - source: elasticsearch.crt
-        target: /usr/share/elasticsearch/config/certs/elasticsearch/elasticsearch.crt
     ports: ['9200:9200']
     networks: ['stack']
     volumes:
+      - 'es_config:/usr/share/elasticsearch/config/'
+      - 'certs:/usr/share/elasticsearch/config/certs'
+      - 'ls_config:/logstash'
+      - 'kb_config:/kibana'
       - 'es_data:/usr/share/elasticsearch/data'
       - './scripts/setup-users.sh:/usr/local/bin/setup-users.sh:ro'
+      - './scripts/setup-elasticsearch.sh:/usr/local/bin/setup-elasticsearch.sh:ro'
+      - './config/instances.yml:/usr/share/elasticsearch/config/certs/ssl/instances.yml'
+      - './config/elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml'
     healthcheck:
       test: curl --cacert /usr/share/elasticsearch/config/certs/ca/ca.crt -s https://localhost:9200 >/dev/null; if [[ $$? == 52 ]]; then echo 0; else echo 1; fi
       interval: 30s
@@ -45,19 +41,14 @@ services:
   kibana:
     image: docker.elastic.co/kibana/kibana:${TAG}
     container_name: kibana
-    secrets:
-      - source: kibana.yml
-        target: /usr/share/kibana/config/kibana.yml
-      - source: kibana.keystore
-        target: /usr/share/kibana/data/kibana.keystore
-      - source: ca.crt
-        target: /usr/share/kibana/config/certs/ca/ca.crt
-      - source: kibana.key
-        target: /usr/share/kibana/config/certs/kibana/kibana.key
-      - source: kibana.crt
-        target: /usr/share/kibana/config/certs/kibana/kibana.crt
     ports: ['5601:5601']
     networks: ['stack']
+    volumes:
+      - 'kb_config:/usr/share/kibana/config'
+      - 'kb_data:/usr/share/kibana/data/'
+      - 'certs:/certs'
+      - './config/kibana/kibana.yml:/usr/share/kibana/config/kibana.yml'
+      - './scripts/setup-kibana.sh:/usr/local/bin/setup-kibana.sh:ro'
     depends_on: ['elasticsearch']
     healthcheck:
       test: curl --cacert /usr/share/elasticsearch/config/certs/ca/ca.crt -s https://localhost:5601 >/dev/null; if [[ $$? == 52 ]]; then echo 0; else echo 1; fi
@@ -68,16 +59,14 @@ services:
   logstash:
     image: docker.elastic.co/logstash/logstash:${TAG}
     container_name: logstash
-    secrets:
-      - source: logstash.conf
-        target: /usr/share/logstash/pipeline/logstash.conf
-      - source: logstash.yml
-        target: /usr/share/logstash/config/logstash.yml
-      - source: logstash.keystore
-        target: /usr/share/logstash/config/logstash.keystore
-      - source: ca.crt
-        target: /usr/share/logstash/config/certs/ca/ca.crt
     networks: ['stack']
+    volumes:
+      - 'ls_config:/usr/share/logstash/config'
+      - 'certs:/certs'
+      - './config/logstash/logstash.yml:/usr/share/logstash/config/logstash.yml'
+      - './config/logstash/pipelines.yml:/usr/share/logstash/config/pipelines.yml'
+      - './config/logstash/pipeline/logstash.conf:/usr/share/logstash/pipeline/logstash.conf'
+      - './scripts/setup-logstash.sh:/usr/local/bin/setup-logstash.sh:ro'
     depends_on: ['elasticsearch']
     healthcheck:
       test: bin/logstash -t
@@ -85,46 +74,43 @@ services:
       timeout: 50s
       retries: 5
 
-  auditbeat:
-    image: docker.elastic.co/beats/auditbeat:${TAG}
-    container_name: auditbeat
-    command: -e --strict.perms=false # -e flag to log to stderr and disable syslog/file output
-    cap_add: ['AUDIT_CONTROL', 'AUDIT_READ']
-    secrets:
-      - source: auditbeat.yml
-        target: /usr/share/auditbeat/auditbeat.yml
-      - source: auditbeat.keystore
-        target: /usr/share/auditbeat/auditbeat.keystore
-      - source: ca.crt
-        target: /usr/share/auditbeat/certs/ca/ca.crt
-    # Auditbeat must run in the main process namespace.
-    pid: host
-    volumes:
-      - './scripts/setup-beat.sh:/usr/local/bin/setup-beat.sh:ro'
-    networks: ['stack']
-    depends_on: ['elasticsearch', 'kibana']
-    healthcheck:
-      test: auditbeat --strict.perms=false test config
-      interval: 30s
-      timeout: 15s
-      retries: 5
+      #  auditbeat:
+      #    image: docker.elastic.co/beats/auditbeat:${TAG}
+      #    container_name: auditbeat
+      #    command: -e --strict.perms=false # -e flag to log to stderr and disable syslog/file output
+      #    cap_add: ['AUDIT_CONTROL', 'AUDIT_READ']
+      #    secrets:
+      #      - source: auditbeat.yml
+      #        target: /usr/share/auditbeat/auditbeat.yml
+      #      - source: auditbeat.keystore
+      #        target: /usr/share/auditbeat/auditbeat.keystore
+      #      - source: ca.crt
+      #        target: /usr/share/auditbeat/certs/ca/ca.crt
+      #    # Auditbeat must run in the main process namespace.
+      #    pid: host
+      #    volumes:
+      #      - './scripts/setup-beat.sh:/usr/local/bin/setup-beat.sh:ro'
+      #    networks: ['stack']
+      #    depends_on: ['elasticsearch', 'kibana']
+      #    healthcheck:
+      #      test: auditbeat --strict.perms=false test config
+      #      interval: 30s
+      #      timeout: 15s
+      #      retries: 5
 
   filebeat:
     image: docker.elastic.co/beats/filebeat:${TAG}
     container_name: filebeat
-    command: --strict.perms=false -e  # -e flag to log to stderr and disable syslog/file output
+    hostname: filebeat
+    command: -e -c=config/filebeat.yml # -e flag to log to stderr and disable syslog/file output
     # If the host system has logs at "/var/log", mount them at "/mnt/log"
     # inside the container, where Filebeat can find them.
     # volumes: ['/var/log:/mnt/log:ro']
-    secrets:
-      - source: filebeat.yml
-        target: /usr/share/filebeat/filebeat.yml
-      - source: filebeat.keystore
-        target: /usr/share/filebeat/filebeat.keystore
-      - source: ca.crt
-        target: /usr/share/filebeat/certs/ca/ca.crt
     volumes:
+      - 'fb_config:/usr/share/filebeat/config'
+      - 'certs:/certs'
       - './scripts/setup-beat.sh:/usr/local/bin/setup-beat.sh:ro'
+      - './config/filebeat/filebeat.yml:/usr/share/filebeat/config/filebeat.yml'
     networks: ['stack']
     depends_on: ['elasticsearch', 'kibana']
     healthcheck:
@@ -136,16 +122,13 @@ services:
   heartbeat:
     image: docker.elastic.co/beats/heartbeat:${TAG}
     container_name: heartbeat
-    command: --strict.perms=false -e  # -e flag to log to stderr and disable syslog/file output
-    secrets:
-      - source: heartbeat.yml
-        target: /usr/share/heartbeat/heartbeat.yml
-      - source: heartbeat.keystore
-        target: /usr/share/heartbeat/heartbeat.keystore
-      - source: ca.crt
-        target: /usr/share/heartbeat/certs/ca/ca.crt
+    hostname: heartbeat
+    command: -e -c=config/heartbeat.yml # -e flag to log to stderr and disable syslog/file output
     volumes:
+      - 'hb_config:/usr/share/heartbeat/config'
+      - 'certs:/certs'
       - './scripts/setup-beat.sh:/usr/local/bin/setup-beat.sh:ro'
+      - './config/heartbeat/heartbeat.yml:/usr/share/heartbeat/config/heartbeat.yml'
     networks: ['stack']
     depends_on: ['elasticsearch', 'kibana']
     healthcheck:
@@ -157,6 +140,7 @@ services:
   metricbeat:
     image: docker.elastic.co/beats/metricbeat:${TAG}
     container_name: metricbeat
+    hostname: metricbeat
     # The commented sections below enable Metricbeat to monitor the Docker host,
     # rather than the Metricbeat container. It's problematic with Docker for
     # Windows, however, since "/proc", "/sys" etc. don't exist on Windows.
@@ -165,16 +149,12 @@ services:
     #   - /proc:/hostfs/proc:ro
     #   - /sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro
     #   - /:/hostfs:ro
-    command: --strict.perms=false -e  # -e flag to log to stderr and disable syslog/file output
-    secrets:
-      - source: metricbeat.yml
-        target: /usr/share/metricbeat/metricbeat.yml
-      - source: metricbeat.keystore
-        target: /usr/share/metricbeat/metricbeat.keystore
-      - source: ca.crt
-        target: /usr/share/metricbeat/certs/ca/ca.crt
+    command: -e -c=config/metricbeat.yml # -e flag to log to stderr and disable syslog/file output
     volumes:
+      - 'mb_config:/usr/share/metricbeat/config'
+      - 'certs:/certs'
       - './scripts/setup-beat.sh:/usr/local/bin/setup-beat.sh:ro'
+      - './config/metricbeat/metricbeat.yml:/usr/share/metricbeat/config/metricbeat.yml'
     networks: ['stack']
     depends_on: ['elasticsearch', 'kibana']
     healthcheck:
@@ -186,6 +166,7 @@ services:
   packetbeat:
     image: docker.elastic.co/beats/packetbeat:${TAG}
     container_name: packetbeat
+    hostname: packetbeat
     # Packetbeat needs some elevated privileges to capture network traffic.
     # We'll grant them with POSIX capabilities.
     cap_add: ['NET_RAW', 'NET_ADMIN']
@@ -197,18 +178,13 @@ services:
     # that the other containers are connected to, and thus can't resolve the
     # hostname "elasticsearch". Instead, we'll tell it to find Elasticsearch
     # on "localhost", which is the Docker host machine in this context.
-    command: -e -E 'output.elasticsearch.hosts=["localhost:9200"]'
     depends_on: ['elasticsearch']
-    command: --strict.perms=false -e -E output.elasticsearch.hosts="https://localhost:9200" # -e flag to log to stderr and disable syslog/file output
-    secrets:
-      - source: packetbeat.yml
-        target: /usr/share/packetbeat/packetbeat.yml
-      - source: packetbeat.keystore
-        target: /usr/share/packetbeat/packetbeat.keystore
-      - source: ca.crt
-        target: /usr/share/packetbeat/certs/ca/ca.crt
+    command: --strict.perms=false -e -c=/usr/share/packetbeat/config/packetbeat.yml # -e flag to log to stderr and disable syslog/file output
     volumes:
+      - 'pb_config:/usr/share/packetbeat/config'
+      - 'certs:/certs'
       - './scripts/setup-beat.sh:/usr/local/bin/setup-beat.sh:ro'
+      - './config/packetbeat/packetbeat.yml:/usr/share/packetbeat/config/packetbeat.yml'
     depends_on: ['elasticsearch', 'kibana']
     healthcheck:
       test: packetbeat test config
@@ -219,21 +195,18 @@ services:
   apm-server:
     image: docker.elastic.co/apm/apm-server:${TAG}
     container_name: apm_server
+    hostname: apm-server
     ports: ['8200:8200']
     networks: ['stack']
-    command: --strict.perms=false -e  # -e flag to log to stderr and disable syslog/file output
-    secrets:
-      - source: apm-server.yml
-        target: /usr/share/apm-server/apm-server.yml
-      - source: apm-server.keystore
-        target: /usr/share/apm-server/apm-server.keystore
-      - source: ca.crt
-        target: /usr/share/apm-server/certs/ca/ca.crt
+    command: --strict.perms=false -e -c=/usr/share/apm-server/config/apm-server.yml # -e flag to log to stderr and disable syslog/file output
     volumes:
+      - 'apm_config:/usr/share/apm-server/config'
+      - 'certs:/certs'
       - './scripts/setup-beat.sh:/usr/local/bin/setup-beat.sh:ro'
+      - './config/apm-server/apm-server.yml:/usr/share/apm-server/config/apm-server.yml'
     depends_on: ['elasticsearch', 'kibana']
     healthcheck:
-      test: curl --cacert /usr/share/elasticsearch/config/certs/ca/ca.crt -s https://localhost:8200/healthcheck >/dev/null; if [[ $$? == 52 ]]; then echo 0; else echo 1; fi
+      test: curl --cacert /usr/share/apm-server/config/ca/ca.crt -s https://localhost:8200/healthcheck >/dev/null; if [[ $$? == 52 ]]; then echo 0; else echo 1; fi
       interval: 30s
       timeout: 10s
       retries: 5
@@ -241,56 +214,14 @@ services:
 networks: {stack: {}}
 # use docker volume to persist ES data outside of a container.
 volumes:
+  certs:
   es_data:
-
-secrets:
-  ca.crt:
-    file: ./config/ssl/ca/ca.crt
-  logstash.yml:
-    file: ./config/logstash/logstash.yml
-  logstash.keystore:
-    file: ./config/logstash/logstash.keystore
-  logstash.conf:
-    file: ./config/logstash/pipeline/logstash.conf
-  elasticsearch.yml:
-    file: ./config/elasticsearch/elasticsearch.yml
-  elasticsearch.keystore:
-    file: ./config/elasticsearch/elasticsearch.keystore
-  elasticsearch.key:
-    file: ./config/elasticsearch/elasticsearch.key
-  elasticsearch.crt:
-    file: ./config/elasticsearch/elasticsearch.crt
-  elasticsearch.p12:
-    file: ./config/elasticsearch/elasticsearch.p12
-  kibana.yml:
-    file: ./config/kibana/kibana.yml
-  kibana.keystore:
-    file: ./config/kibana/kibana.keystore
-  kibana.key:
-    file: ./config/kibana/kibana.key
-  kibana.crt:
-    file: ./config/kibana/kibana.crt
-  auditbeat.yml:
-    file: ./config/auditbeat/auditbeat.yml
-  auditbeat.keystore:
-    file: ./config/auditbeat/auditbeat.keystore
-  filebeat.yml:
-    file: ./config/filebeat/filebeat.yml
-  filebeat.keystore:
-    file: ./config/filebeat/filebeat.keystore
-  heartbeat.yml:
-    file: ./config/heartbeat/heartbeat.yml
-  heartbeat.keystore:
-    file: ./config/heartbeat/heartbeat.keystore
-  metricbeat.yml:
-    file: ./config/metricbeat/metricbeat.yml
-  metricbeat.keystore:
-    file: ./config/metricbeat/metricbeat.keystore
-  packetbeat.yml:
-    file: ./config/packetbeat/packetbeat.yml
-  packetbeat.keystore:
-    file: ./config/packetbeat/packetbeat.keystore
-  apm-server.yml:
-    file: ./config/apm-server/apm-server.yml
-  apm-server.keystore:
-    file: ./config/apm-server/apm-server.keystore
+  es_config:
+  kb_config:
+  kb_data:
+  ls_config:
+  fb_config:
+  hb_config:
+  mb_config:
+  pb_config:
+  apm_config:

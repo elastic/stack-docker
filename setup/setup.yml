@@ -1,7 +1,7 @@
 version: "3.6"
 services:
   setup:
-    image: docker/compose:1.21.2
+    build: .
     working_dir: "${PWD}"
     cap_add: ['SYS_ADMIN']
     environment:
@@ -9,10 +9,11 @@ services:
       - "ELASTIC_PASSWORD"
       - "ELASTIC_VERSION"
       - "TAG"
+      - "COMPOSE_PROJECT_NAME=stackdocker"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
       - "${PWD}:${PWD}"
     entrypoint: ["/bin/ash", "-c"]
-    command: ['cat ./scripts/setup.sh | tr -d "\r" | ash']
+    command: ['cat ./scripts/setup.sh | tr -d "\r" | bash']
 
     # command: ["./scripts/setup.sh"]

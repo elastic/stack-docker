@@ -1,3 +1,5 @@
+keystore.path: "/usr/share/packetbeat/config/packetbeat.keystore"
+
 packetbeat.interfaces.device: any
 
 packetbeat.flows:
@@ -38,19 +40,19 @@ processors:
 - add_cloud_metadata:
 
 output.elasticsearch:
-  hosts: ['elasticsearch:9200']
+  hosts: ['localhost:9200'] # locahost cause we are using network mode = host
   protocol: "https"
   username: elastic
   # Read PW from packetbeat.keystore
   password: "${ELASTIC_PASSWORD}"
-  ssl.certificate_authorities: ["/usr/share/packetbeat/certs/ca/ca.crt"]
+  ssl.certificate_authorities: ["/certs/ssl/ca/ca.crt"]
 
 setup.kibana:
-  host: "http://kibana:5601"
+  host: "http://localhost:5601" # locahost cause we are using network mode = host
   username: elastic
   password: "${ELASTIC_PASSWORD}"
   protocol: "http"
   ssl.enabled: false
-  ssl.certificate_authorities: ["/usr/share/packetbeat/certs/ca/ca.crt"]
+  ssl.certificate_authorities: ["/certs/ssl/ca/ca.crt"]
 
 xpack.monitoring.enabled: true

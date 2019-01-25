@@ -43,13 +43,16 @@ By default, the amount of Virtual Memory [is not enough](https://www.elastic.co/
 First we need to:
 
 1. set default password
-2. create keystores to store passwords
-3. install dashboards, index patterns, etc.. for beats and apm
+2. Create SSL certs
+3. create keystores to store passwords
+4. install dashboards, index patterns, etc.. for beats and apm
 
 This is accomplished using the setup.yml file:
 ```
-docker-compose -f setup.yml up
+docker-compose -f setup.yml run --rm setup bash
+bash ./scripts/setup.sh
 ```
+When the setup has finished you can type `exit` to quit the setup process
 
 Please take note after the setup completes it will output the password
 that is used for the `elastic` login.
