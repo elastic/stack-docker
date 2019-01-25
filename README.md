@@ -70,6 +70,10 @@ and Heartbeat.
 
 Point a browser at [`http://localhost:5601`](http://localhost:5601) to see the results.
 > *NOTE*: Elasticsearch is now setup with self-signed certs.
+> This means anytime you want to interact with elasticsearch by using other tools/clients you must use
+> https, and if you want to get the `ca.crt` you can get it by running
+> `docker exec -it elasticsearch cat /usr/share/elasticsearch/config/certs/ssl/ca/ca.crt`
+
 
 Log in with `elastic` and what ever your auto generated elastic password is from the
 setup.
