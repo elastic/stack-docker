@@ -74,29 +74,28 @@ services:
       timeout: 50s
       retries: 5
 
-      #  auditbeat:
-      #    image: docker.elastic.co/beats/auditbeat:${TAG}
-      #    container_name: auditbeat
-      #    command: -e --strict.perms=false # -e flag to log to stderr and disable syslog/file output
-      #    cap_add: ['AUDIT_CONTROL', 'AUDIT_READ']
-      #    secrets:
-      #      - source: auditbeat.yml
-      #        target: /usr/share/auditbeat/auditbeat.yml
-      #      - source: auditbeat.keystore
-      #        target: /usr/share/auditbeat/auditbeat.keystore
-      #      - source: ca.crt
-      #        target: /usr/share/auditbeat/certs/ca/ca.crt
-      #    # Auditbeat must run in the main process namespace.
-      #    pid: host
-      #    volumes:
-      #      - './scripts/setup-beat.sh:/usr/local/bin/setup-beat.sh:ro'
-      #    networks: ['stack']
-      #    depends_on: ['elasticsearch', 'kibana']
-      #    healthcheck:
-      #      test: auditbeat --strict.perms=false test config
-      #      interval: 30s
-      #      timeout: 15s
-      #      retries: 5
+  auditbeat:
+    image: docker.elastic.co/beats/auditbeat:${TAG}
+    container_name: auditbeat
+    hostname: auditbeat
+    command: -e -c=config/auditbeat.yml # -e flag to log to stderr and disable syslog/file output
+    cap_add: ['AUDIT_CONTROL', 'AUDIT_READ']
+    # Auditbeat must run in the main process namespace.
+    pid: host
+    volumes:
+      - 'ab_config:/usr/share/auditbeat/config'
+      - 'certs:/certs'
+      - './scripts/setup-beat.sh:/usr/local/bin/setup-beat.sh:ro'
+      - './config/auditbeat/auditbeat.yml:/usr/share/auditbeat/config/auditbeat.yml'
+    volumes:
+      - './scripts/setup-beat.sh:/usr/local/bin/setup-beat.sh:ro'
+    networks: ['stack']
+    depends_on: ['elasticsearch', 'kibana']
+    healthcheck:
+      test: auditbeat --strict.perms=false test config
+      interval: 30s
+      timeout: 15s
+      retries: 5
 
   filebeat:
     image: docker.elastic.co/beats/filebeat:${TAG}
