@@ -7,16 +7,19 @@ Elastic Stack, all running on a single machine under Docker.
   * Windows and Mac users get Compose installed automatically
 with Docker for Windows/Mac.
 
+  * Ensure that docker-compose version >= 1.21.0,
+    * Compose introduced a bug wrt project names stripping out hyphens and underscores that was fixed in 1.21.0
+
   * Linux users can read the [install instructions](https://docs.docker.com/compose/install/#install-compose) or can install via pip:
 ```
 pip install docker-compose
 ```
 
-### Windows 
+### Windows
 Please note that this repo has scripting that's written in `bash`. What this means is the containers that are linux based
-are expecting linux style line endings. If you clone this repo and you have windows style line endings, then please 
+are expecting linux style line endings. If you clone this repo and you have windows style line endings, then please
 read [The case of Windows line-ending in bash-script](https://techblog.dorogin.com/case-of-windows-line-ending-in-bash-script-7236f056abe). We've included the `.gitattributes` file in this project to help alliviate any issues. But you might need to make
-git global config settings. 
+git global config settings.
 
 * Windows Users must set the following 2 ENV vars:
   * `COMPOSE_CONVERT_WINDOWS_PATHS=1`
