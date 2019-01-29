@@ -64,6 +64,16 @@ docker-compose -f setup/setup.yml run --rm setup
 Please take note after the setup completes it will output the password
 that is used for the `elastic` login.
 
+*Please note* that this repository makes the assumption that you will be cloneing the repository into a directory
+named `stack-docker`. If you choose to name the directory something else upon cloneing or after, you will have
+to specify the `-p stack-docker` flag when running `docker-compose` commands (aside from the setup command).
+
+From the docker-compose help:
+```
+-p, --project-name NAME     Specify an alternate project name
+                              (default: directory name)
+```
+
 Now we can launch the stack with `docker-compose up -d` to create a demonstration Elastic Stack with
 Elasticsearch, Kibana, Logstash, Auditbeat, Metricbeat, Filebeat, Packetbeat,
 and Heartbeat.
