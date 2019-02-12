@@ -6,7 +6,7 @@ beat=$1
 
 until curl -s "http://kibana:5601/login" | grep "Loading Kibana" > /dev/null; do
 	  echo "Waiting for kibana..."
-	  sleep 1
+	  sleep 5
 done
 
 chmod go-w /usr/share/$beat/$beat.yml
