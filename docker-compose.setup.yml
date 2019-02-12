@@ -118,7 +118,6 @@ services:
     container_name: setup_apm_server
     user: root
     command: ['/bin/bash', '-c', 'cat /usr/local/bin/setup-apm-server.sh | tr -d "\r" | bash']
-    working_dir: '/config'
     volumes:
       - './config:/config'
       - './scripts/setup-apm-server.sh:/usr/local/bin/setup-apm-server.sh:ro'
