@@ -2,38 +2,26 @@
 
 set -euo pipefail
 
-cacert=/usr/share/apm-server/certs/ca/ca.crt
-# Wait for ca file to exist before we continue. If the ca file doesn't exist
-# then something went wrong.
-while [ ! -f $cacert ]
-do
-  sleep 2
-done
-ls -l $cacert
-
-es_url=https://elasticsearch:9200
-# Wait for Elasticsearch to start up before doing anything.
-while [[ "$(curl -u "elastic:${ELASTIC_PASSWORD}" --cacert $cacert -s -o /dev/null -w '%{http_code}' $es_url)" != "200" ]]; do 
-    sleep 5 
+until curl -s "http://kibana:5601/login" | grep "Loading Kibana" > /dev/null; do
+	  echo "Waiting for kibana..."
+	  sleep 5
 done
 
-# Set the password for the apm_system user.
-# REF: https://www.elastic.co/guide/en/x-pack/6.0/setting-up-authentication.html#set-built-in-user-passwords
-until curl -u "elastic:${ELASTIC_PASSWORD}" --cacert $cacert -s -H 'Content-Type:application/json' \
-     -XPUT $es_url/_xpack/security/user/apm_system/_password \
-     -d "{\"password\": \"${ELASTIC_PASSWORD}\"}"
-do
-    sleep 2
-    echo Retrying...
-done
+# apm-server.yml needs to be owned by root
+chown root /usr/share/apm-server/apm-server.yml
 
+echo "Creating keystore..."
+echo "y" | /usr/share/apm-server/apm-server keystore create --force
 
-echo "=== CREATE Keystore ==="
-if [ -f /config/apm-server/apm-server.keystore ]; then
-    echo "Remove old apm-server.keystore"
-    rm /config/apm-server/apm-server.keystore
-fi
-echo "y" | /usr/share/apm-server/apm-server keystore create
-echo "Setting ELASTIC_PASSWORD..."
+echo "Adding ELASTIC_PASSWORD to keystore..."
 echo "$ELASTIC_PASSWORD" | /usr/share/apm-server/apm-server keystore add 'ELASTIC_PASSWORD' --stdin
-mv /usr/share/apm-server/config/apm-server.keystore /config/apm-server/apm-server.keystore
+/usr/share/apm-server/apm-server keystore list
+
+echo "Setting up dashboards..."
+# Load the sample dashboards for APM.
+# REF: https://www.elastic.co/guide/en/apm/server/current/load-kibana-dashboards.html
+/usr/share/apm-server/apm-server setup --dashboards
+
+echo "Copy keystore to ./config dir"
+mv /usr/share/apm-server/apm-server.keystore /config/apm-server/apm-server.keystore
+chown 1000:1000 /config/apm-server/apm-server.keystore
