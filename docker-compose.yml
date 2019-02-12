@@ -230,7 +230,7 @@ services:
       - source: ca.crt
         target: /usr/share/apm-server/certs/ca/ca.crt
     volumes:
-      - './scripts/setup-beat.sh:/usr/local/bin/setup-beat.sh:ro'
+      - './scripts/setup-apm-server.sh:/usr/local/bin/setup-apm-server.sh:ro'
     depends_on: ['elasticsearch', 'kibana']
     healthcheck:
       test: curl --cacert /usr/share/elasticsearch/config/certs/ca/ca.crt -s https://localhost:8200/healthcheck >/dev/null; if [[ $$? == 52 ]]; then echo 0; else echo 1; fi
