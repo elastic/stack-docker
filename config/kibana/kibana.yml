@@ -2,7 +2,7 @@
 
 server.name: kibana
 server.host: "0"
-elasticsearch.url: https://elasticsearch:9200
+elasticsearch.hosts: https://elasticsearch:9200
 # elasticsearch.password is stored in `kibana.keystore`
 elasticsearch.username: kibana
 elasticsearch.ssl.certificateAuthorities: ["/certs/ssl/ca/ca.crt"]

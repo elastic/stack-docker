@@ -6,6 +6,13 @@ transport.host: 0.0.0.0
 # set to 1 to allow single node clusters
 # Details: https://github.com/elastic/elasticsearch/pull/17288
 discovery.zen.minimum_master_nodes: 1
+
+# the discovery.type setting below eliminated this error
+#  ERROR: [1] bootstrap checks failed
+#  [1]: the default discovery settings are unsuitable for production use; at least one of
+#  [discovery.seed_hosts, discovery.seed_providers, cluster.initial_master_nodes] must be configured
+discovery.type: single-node
+
 xpack.license.self_generated.type: trial
 xpack.security.enabled: true
 xpack.security.http.ssl.enabled: true

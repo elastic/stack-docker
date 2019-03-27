@@ -99,7 +99,7 @@ services:
     image: docker.elastic.co/beats/filebeat:${TAG}
     container_name: filebeat
     hostname: filebeat
-    command: -e -c=config/filebeat.yml # -e flag to log to stderr and disable syslog/file output
+    command: --strict.perms=false -e -c=config/filebeat.yml # -e flag to log to stderr and disable syslog/file output
     # If the host system has logs at "/var/log", mount them at "/mnt/log"
     # inside the container, where Filebeat can find them.
     # volumes: ['/var/log:/mnt/log:ro']
@@ -120,7 +120,7 @@ services:
     image: docker.elastic.co/beats/heartbeat:${TAG}
     container_name: heartbeat
     hostname: heartbeat
-    command: -e -c=config/heartbeat.yml # -e flag to log to stderr and disable syslog/file output
+    command: --strict.perms=false -e -c=config/heartbeat.yml # -e flag to log to stderr and disable syslog/file output
     volumes:
       - 'hb_config:/usr/share/heartbeat/config'
       - 'certs:/certs'
@@ -146,7 +146,7 @@ services:
     #   - /proc:/hostfs/proc:ro
     #   - /sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro
     #   - /:/hostfs:ro
-    command: -e -c=config/metricbeat.yml # -e flag to log to stderr and disable syslog/file output
+    command: --strict.perms=false -e -c=config/metricbeat.yml # -e flag to log to stderr and disable syslog/file output
     volumes:
       - 'mb_config:/usr/share/metricbeat/config'
       - 'certs:/certs'

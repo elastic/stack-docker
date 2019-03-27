@@ -2,7 +2,7 @@
 configdir=/usr/share/elasticsearch/config
 # Determine if x-pack is enabled
 echo "Determining if x-pack is installed..."
-if [[ -d /usr/share/elasticsearch/bin/x-pack ]]; then
+if [[ -f bin/elasticsearch-users ]]; then
     if [[ -n "$ELASTIC_PASSWORD" ]]; then
 
         echo "=== CREATE Keystore ==="

@@ -1,9 +1,6 @@
 keystore.path: "/usr/share/filebeat/config/filebeat.keystore"
 
 filebeat.config:
-  prospectors:
-    path: ${path.config}/prospectors.d/*.yml
-    reload.enabled: false
   modules:
     path: ${path.config}/modules.d/*.yml
     reload.enabled: false
